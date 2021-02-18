@@ -2,6 +2,8 @@ import config
 import websocket, json
 
 listening_to = ["AM.TSLA", "AM.GME"]
+
+
 def on_open(ws):
     print("open")
     auth_data = {
@@ -18,6 +20,7 @@ def on_open(ws):
 def on_message(ws, message):
     print("received a message")
     print(message)
+
 
 def on_close(ws):
     print("closed connection")

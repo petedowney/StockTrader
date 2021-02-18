@@ -1,5 +1,5 @@
 #keys
-keys.json
+config.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -130,3 +130,4 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+pythonProject/config.py

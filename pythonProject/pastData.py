@@ -67,16 +67,4 @@ for i in range(count):
     
     print('progress:', str(i) + "/" + str(count - 1))
 
-np.savetxt("data.csv", data, fmt='%f')
-
-
-
-
-
-
-
-
-
-
-
-
+np.savetxt("data.csv", data, delimiter= ',', fmt='%f')

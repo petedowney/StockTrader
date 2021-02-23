@@ -61,9 +61,9 @@ model = models.Sequential()
 #model.add(layers.Convolution1D(filters=10, kernel_size=5, padding='valid', activation='relu', input_shape=(1, 950,)))
 #model.add(layers.AveragePooling2D(pool_size=2))
 
-model.add(layers.Dense(120, activation='relu', input_shape=(950,)))
-model.add(layers.Dense(1280, activation='relu'))
-model.add(layers.Dense(100, activation='relu'))
+model.add(layers.Dense(120, activation='sigmoid', input_shape=(950,)))
+model.add(layers.Dense(1280, activation='sigmoid'))
+model.add(layers.Dense(100, activation='sigmoid'))
 model.add(layers.Dense(50, activation='linear'))
 
 
@@ -73,24 +73,26 @@ model.summary()
 model.compile(optimizer='rmsprop',
               loss='categorical_crossentropy',
               metrics=['accuracy'])
-model.fit(train_X, train_Y, epochs=50, batch_size=64)
+model.fit(train_X, train_Y, epochs=20, batch_size=64)
 
-prediction = model.predict(train_X)
+prediction = model.predict(test_X)
 
 
 #print("Correct".rjust(23), "Incorrect".rjust(10))
 print()
-
+t_Accuracy = 0
 for x in range(0, len(prediction[0])):
 
-    true = len(train_Y[x][abs(prediction[x] - train_Y[x]) <= 1]);
-    false = len(train_Y[x][abs(prediction[x] - train_Y[x]) > 1]);
+    true = len(test_Y[x][abs(prediction[x] - test_Y[x]) <= 1]);
+    false = len(test_Y[x][abs(prediction[x] - test_Y[x]) > 1]);
 
-    accuracy = true / len(train_Y[x])
+    accuracy = true / len(test_Y[x])
+    t_Accuracy += accuracy;
 
     print("Accuracy:".rjust(12), "{a:.3f}".format(a=accuracy).rjust(10), "row {a}".format(a=x + 1))
 
-
+t_Accuracy /= len(prediction[0])
+print("Average Accuracy:".rjust(12), "{a:.3f}".format(a=t_Accuracy).rjust(10))
 
 
 # use this:

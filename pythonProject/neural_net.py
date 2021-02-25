@@ -12,28 +12,22 @@ from keras import utils
 import tensorflow
 
 
-
-fileName = 'data.csv'
-raw_data = open(fileName, 'rt')
-data = np.loadtxt(raw_data, delimiter = ',', dtype = np.float)
-
 def standerdize(data):
 
     print(len(data))
 
     f = 0
     for n in data:
-        if np.std(n) != 0:
-            mean = n.mean()
-            ranges = max(n) - min(n)
-            data[f] = ((n - mean) / ranges)
+        mean = n.mean()
+        ranges = max(n) - min(n)
+        data[f] = ((n - mean) / ranges)
         f += 1
 
     return data
 
 
 
-def splitData(data, yCount = 50, trainPercent = 0.9): # TODO: shuffle randomly USE traintestsplit https://www.youtube.com/watch?v=iMIWee_PXl8&ab_channel=TheSemicolon
+def splitData(data, yCount = 1, trainPercent = 0.9): # TODO: shuffle randomly USE traintestsplit https://www.youtube.com/watch?v=iMIWee_PXl8&ab_channel=TheSemicolon
     shape = data.shape
     
     trainTill = int(shape[0] * trainPercent)
@@ -49,22 +43,45 @@ def splitData(data, yCount = 50, trainPercent = 0.9): # TODO: shuffle randomly U
     test_X = test[:, :xTill]
     test_Y = test[:, xTill:]
     
+    trainshape = train_X.shape
+    train_X = train_X.reshape(trainshape[0], trainshape[1], 1)
+    train_Y = train_Y.reshape(trainshape[0])
+
+    testshape = test_X.shape
+    test_X = test_X.reshape(testshape[0], testshape[1], 1)
+    test_Y = test_Y.reshape(testshape[0])
+    
     return ((train_X, train_Y), (test_X, test_Y))
+
+fileName = 'data.csv'
+raw_data = open(fileName, 'rt')
+data = np.loadtxt(raw_data, delimiter = ',', dtype = np.float)
+
 
 data = standerdize(data)
 (train_X, train_Y), (test_X, test_Y) = splitData(data)
+
+
+
+train_X = train_X.reshape(2363, 999, 1)
+test_X = test_X.reshape(263, 999, 1)
+
+train_Y = train_Y.reshape(2363)
+test_Y = test_Y.reshape(263)
 
 print(data)
 
 model = models.Sequential()
 
-#model.add(layers.Convolution1D(filters=10, kernel_size=5, padding='valid', activation='relu', input_shape=(1, 950,)))
-#model.add(layers.AveragePooling2D(pool_size=2))
+# input layer
+model.add(layers.LSTM(128, input_shape = (None, 1), activation = 'relu'))
 
-model.add(layers.Dense(120, activation='sigmoid', input_shape=(950,)))
-model.add(layers.Dense(1280, activation='sigmoid'))
-model.add(layers.Dense(100, activation='sigmoid'))
-model.add(layers.Dense(50, activation='linear'))
+# hidden layers
+model.add(layers.Dense(64, activation='relu'))
+model.add(layers.Dense(32))
+
+# output layer
+model.add(layers.Dense(1, activation='linear')) # TODO: make output size 50
 
 
 model.summary()

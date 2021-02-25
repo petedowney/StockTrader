@@ -57,28 +57,22 @@ fileName = 'data.csv'
 raw_data = open(fileName, 'rt')
 data = np.loadtxt(raw_data, delimiter = ',', dtype = np.float)
 
+data = data[:500, :]
+
 
 data = standerdize(data)
 (train_X, train_Y), (test_X, test_Y) = splitData(data)
-
-
-
-train_X = train_X.reshape(2363, 999, 1)
-test_X = test_X.reshape(263, 999, 1)
-
-train_Y = train_Y.reshape(2363)
-test_Y = test_Y.reshape(263)
 
 print(data)
 
 model = models.Sequential()
 
 # input layer
-model.add(layers.LSTM(128, input_shape = (None, 1), activation = 'relu'))
+model.add(layers.LSTM(48, input_shape = (None, 1), activation = 'relu'))
 
 # hidden layers
-model.add(layers.Dense(64, activation='relu'))
-model.add(layers.Dense(32))
+model.add(layers.Dense(138, activation='relu'))
+model.add(layers.Dense(64))
 
 # output layer
 model.add(layers.Dense(1, activation='linear')) # TODO: make output size 50
@@ -87,9 +81,7 @@ model.add(layers.Dense(1, activation='linear')) # TODO: make output size 50
 model.summary()
 
 
-model.compile(optimizer='rmsprop',
-              loss='categorical_crossentropy',
-              metrics=['accuracy'])
+model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
 model.fit(train_X, train_Y, epochs=20, batch_size=64)
 
 prediction = model.predict(test_X)

@@ -10,6 +10,11 @@ from keras import backend as back
 from keras import models
 from keras import layers
 from keras import utils
+
+import os
+
+os.environ['CUDA_VISIBLE_DEVICES']='-1'
+
 import tensorflow as tf
 from tensorflow.python.client import device_lib
 
@@ -72,7 +77,7 @@ data = np.loadtxt(raw_data, delimiter = ',', dtype = np.float)
 
 data = data[:200, :]
 
-outputCount = 50
+outputCount = 30
 
 data = standerdize(data)
 (train_X, train_Y), (test_X, test_Y) = splitData(data, outputCount)
@@ -128,3 +133,18 @@ for i in range(len(test_X)):
 
 # use this:
 # https://www.youtube.com/watch?v=iMIWee_PXl8&ab_channel=StanfordUniversitySchoolofEngineering
+prediction = prediction
+test_Y = test_Y
+
+cost = [None] * len(prediction)
+most_Inaccurate = (prediction[0] - test_Y[0])**2
+
+for x in range(0, len(prediction)):
+
+    cost[x] = (prediction[x] - test_Y[x])**2
+
+print("Greatest Error:".rjust(18), "{a:.3f}".format(a=np.max(cost)).rjust(10))
+print("Smallest Error:".rjust(18), "{a:.3f}".format(a=np.min(cost)).rjust(10))
+print("Average Error:".rjust(18), "{a:.3f}".format(a=np.average(cost)).rjust(10))
+print("Median:".rjust(18), "{a:.3f}".format(a=np.median(cost)).rjust(10))
+print("STD:".rjust(18), "{a:.3f}".format(a=np.std(cost)).rjust(10))

@@ -24,16 +24,21 @@ def main():
     (train_X, train_Y), (test_X, test_Y) = split_data(data, output_count)
 
     model = models.Sequential()
-    
+
+    #model.add(layers.Conv1D(32, kernel_size=8, strides=1, input_shape=(None, 1), activation='swish'))
+    #model.add(layers.AveragePooling1D(4))
+    #model.add(layers.Dense(32, activation='swish'))
+
     # input layer
-    model.add(layers.LSTM(48, input_shape=(None, 1), activation='swish'))
+    model.add(layers.LSTM(48, activation='swish', input_shape=(None, 1)))
+    #model.add(layers.LSTM(64, activation='swish'))
 
     # hidden layers
     model.add(layers.Dense(128, activation='swish'))
     model.add(layers.Dense(64, activation='linear'))
 
     # output layer
-    model.add(layers.Dense(output_count, activation='linear'))  # TODO: make output size 50
+    model.add(layers.Dense(output_count, activation='linear'))
 
     model.summary()
 
@@ -70,6 +75,7 @@ def main():
 def standerdize(data):
 
     f = 0
+
     for n in data:
         mean = n.mean()
         ranges = max(n) - min(n)

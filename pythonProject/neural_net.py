@@ -86,23 +86,18 @@ model.fit(train_X, train_Y, epochs=20, batch_size=64)
 
 prediction = model.predict(test_X)
 
+prediction = prediction
+test_Y = test_Y
 
-#print("Correct".rjust(23), "Incorrect".rjust(10))
-print()
-t_Accuracy = 0
-for x in range(0, len(prediction[0])):
+cost = [None] * len(prediction)
+most_Inaccurate = (prediction[0] - test_Y[0])**2
 
-    true = len(test_Y[x][abs(prediction[x] - test_Y[x]) <= 1]);
-    false = len(test_Y[x][abs(prediction[x] - test_Y[x]) > 1]);
+for x in range(0, len(prediction)):
 
-    accuracy = true / len(test_Y[x])
-    t_Accuracy += accuracy;
+    cost[x] = (prediction[x] - test_Y[x])**2
 
-    print("Accuracy:".rjust(12), "{a:.3f}".format(a=accuracy).rjust(10), "row {a}".format(a=x + 1))
-
-t_Accuracy /= len(prediction[0])
-print("Average Accuracy:".rjust(12), "{a:.3f}".format(a=t_Accuracy).rjust(10))
-
-
-# use this:
-# https://www.youtube.com/watch?v=iMIWee_PXl8&ab_channel=StanfordUniversitySchoolofEngineering
+print("Greatest Error:".rjust(18), "{a:.3f}".format(a=np.max(cost)).rjust(10))
+print("Smallest Error:".rjust(18), "{a:.3f}".format(a=np.min(cost)).rjust(10))
+print("Average Error:".rjust(18), "{a:.3f}".format(a=np.average(cost)).rjust(10))
+print("Median:".rjust(18), "{a:.3f}".format(a=np.median(cost)).rjust(10))
+print("STD:".rjust(18), "{a:.3f}".format(a=np.std(cost)).rjust(10))

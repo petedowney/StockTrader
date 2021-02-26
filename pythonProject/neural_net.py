@@ -4,19 +4,9 @@ Created on Mon Feb 22 15:04:12 2021
 
 @author: Toby
 """
-import math
 import numpy as np
-from keras import backend as back
 from keras import models
 from keras import layers
-from keras import utils
-
-import os
-
-os.environ['CUDA_VISIBLE_DEVICES']='-1'
-
-import tensorflow as tf
-from tensorflow.python.client import device_lib
 
 
 import matplotlib.pyplot as plt
@@ -61,15 +51,6 @@ def splitData(data, yCount = 1, trainPercent = 0.9): # TODO: shuffle randomly US
     
     return ((train_X, train_Y), (test_X, test_Y))
 
-'''
-print('GPU COUNT:', str(len(tf.config.experimental.list_physical_devices('GPU'))))
-print(device_lib.list_local_devices())
-
-tf.test.is_built_with_cuda()
-print('GPU COUNT:', str(len(tf.config.experimental.list_physical_devices('GPU'))))
-'''
-
-#print(back.tensorflow_backend._get_available_gpus())
 
 fileName = 'data.csv'
 raw_data = open(fileName, 'rt')

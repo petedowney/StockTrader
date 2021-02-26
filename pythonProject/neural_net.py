@@ -10,6 +10,63 @@ from keras import models
 from keras import layers
 import matplotlib.pyplot as plt
 
+def main():
+
+    file_name = 'data.csv'
+    raw_data = open(file_name, 'rt')
+    data = np.loadtxt(raw_data, delimiter=',', dtype=np.float)
+
+    data = data[:200, :]
+
+    output_count = 30
+
+    data = standerdize(data)
+    (train_X, train_Y), (test_X, test_Y) = split_data(data, output_count)
+
+    model = models.Sequential()
+    
+    # input layer
+    model.add(layers.LSTM(48, input_shape=(None, 1), activation='swish'))
+
+    # hidden layers
+    model.add(layers.Dense(128, activation='swish'))
+    model.add(layers.Dense(64, activation='linear'))
+
+    # output layer
+    model.add(layers.Dense(output_count, activation='linear'))  # TODO: make output size 50
+
+    model.summary()
+
+    model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
+    model.fit(train_X, train_Y, epochs=30, batch_size=64)
+
+    prediction = model.predict(test_X)
+
+    cost = (prediction - test_Y) ** 2
+    avg_cost = [None] * len(cost[0])
+
+    for x in range(0, len(cost[0])):
+        avg_cost[x] = np.average(cost[:, x])
+
+    temp = np.linspace(0, len(cost[0]) * 15, len(cost[0]))
+
+    # why. why is this how you call it. who made this
+    m, b = np.polyfit(temp, avg_cost, 1)
+
+    print("Greatest Error:".rjust(18), "{a:.5}".format(a=np.max(cost)).rjust(10))
+    print("Smallest Error:".rjust(18), "{a:.5}".format(a=np.min(cost)).rjust(10))
+    print("Average Error:".rjust(18), "{a:.5}".format(a=np.average(cost)).rjust(10))
+    print("Median:".rjust(18), "{a:.5}".format(a=np.median(cost)).rjust(10))
+    print("STD:".rjust(18), "{a:.5}".format(a=np.std(cost)).rjust(10))
+    print("Degradation Rate:".rjust(18), "{a:.5}".format(a=m * 15).rjust(10))
+
+    fig = plt.figure()
+    ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
+    ax.plot(range(0, len(cost[0]) * 15, 15), avg_cost)
+    plt.plot(range(0, len(cost[0]) * 15, 15), m * temp + b)
+    plt.show()
+
+
 def standerdize(data):
 
     f = 0
@@ -21,112 +78,48 @@ def standerdize(data):
 
     return data
 
-def splitData(data, yCount = 1, trainPercent = 0.9): # TODO: shuffle randomly USE traintestsplit https://www.youtube.com/watch?v=iMIWee_PXl8&ab_channel=TheSemicolon
+
+def split_data(data, y_count=1, train_percent=0.9):
+    # TODO: shuffle randomly USE traintestsplit https://www.youtube.com/watch?v=iMIWee_PXl8&ab_channel=TheSemicolon
     shape = data.shape
     
-    trainTill = int(shape[0] * trainPercent)
+    train_till = int(shape[0] * train_percent)
     
-    train = data[:trainTill, :]
-    test = data[trainTill:, :]
+    train = data[:train_till, :]
+    test = data[train_till:, :]
     
-    xTill = shape[1] - yCount
+    x_till = shape[1] - y_count
     
-    train_X = train[:, :xTill]
-    train_Y = train[:, xTill:]
+    train_x = train[:, :x_till]
+    train_y = train[:, x_till:]
     
-    test_X = test[:, :xTill]
-    test_Y = test[:, xTill:]
+    test_x = test[:, :x_till]
+    test_y = test[:, x_till:]
     
-    trainshape = train_X.shape
-    train_X = train_X.reshape(trainshape[0], trainshape[1], 1)
-    train_Y = train_Y.reshape(trainshape[0], yCount)
+    train_shape = train_x.shape
+    train_x = train_x.reshape(train_shape[0], train_shape[1], 1)
+    train_y = train_y.reshape(train_shape[0], y_count)
 
-    testshape = test_X.shape
-    test_X = test_X.reshape(testshape[0], testshape[1], 1)
-    test_Y = test_Y.reshape(testshape[0], yCount)
+    test_shape = test_x.shape
+    test_x = test_x.reshape(test_shape[0], test_shape[1], 1)
+    test_y = test_y.reshape(test_shape[0], y_count)
     
-    return ((train_X, train_Y), (test_X, test_Y))
+    return (train_x, train_y), (test_x, test_y)
 
 
-fileName = 'data.csv'
-raw_data = open(fileName, 'rt')
-data = np.loadtxt(raw_data, delimiter = ',', dtype=np.float)
-
-data = data[:200, :]
-
-outputCount = 30
-
-data = standerdize(data)
-(train_X, train_Y), (test_X, test_Y) = splitData(data, outputCount)
-
-model = models.Sequential()
-
-# input layer
-model.add(layers.LSTM(48, input_shape = (None, 1), activation='swish'))
-
-# hidden layers
-model.add(layers.Dense(128, activation='swish'))
-model.add(layers.Dense(64, activation='linear'))
-
-# output layer
-model.add(layers.Dense(outputCount, activation='linear')) # TODO: make output size 50
-
-
-model.summary()
-
-
-model.compile(loss='mean_squared_error', optimizer='adam'  , metrics=['accuracy'])
-model.fit(train_X, train_Y, epochs=30, batch_size=64)
-
-prediction = model.predict(test_X)
-
-
-def plot(preCount, outputCount, test_X, test_Y, prediction, index):
+def plot(pre_count, output_count, test_x, test_y, prediction, index):
     
-    test_X = test_X[index]
-    test_Y = test_Y[index]
+    test_x = test_x[index]
+    test_y = test_y[index]
     prediction = prediction[index]
 
-    
     fig = plt.figure()
     ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
-    
-    ax.set(title = 'Predicted vs Actual', xlabel = 'sample', ylabel = 'value')
-        
-    
-    indices = range(len(test_X) - preCount, len(test_X) + outputCount)
-    postIndices = range(len(test_X), len(test_X) + outputCount)
-    
-    
-    ax.plot(indices, np.concatenate((test_X[-preCount:].flatten(), test_Y.flatten())), color = 'blue')
-    ax.plot(postIndices, prediction, color = 'orange')
-    
-    ax.axvline(x = len(test_X), color = 'green', linewidth = 2, linestyle = '--')
+    ax.set(title='Predicted vs Actual', xlabel='sample', ylabel = 'value')
+    indices = range(len(test_x) - pre_count, len(test_x) + output_count)
+    post_indices = range(len(test_x), len(test_x) + output_count)
+    ax.plot(indices, np.concatenate((test_x[-pre_count:].flatten(), test_y.flatten())), color='blue')
+    ax.plot(post_indices, prediction, color='orange')
+    ax.axvline(x=len(test_x), color='green', linewidth=2, linestyle='--')
 
-#for i in range(len(test_X)):
-#    plot(outputCount, outputCount, test_X, test_Y, prediction, i)
-#toby you cant just open up 50 different plots the max is 20
-
-cost = (prediction - test_Y)**2
-avg_Cost = [None] * len(cost[0])
-
-for x in range(0, len(cost[0])):
-    avg_Cost[x] = np.average(cost[:, x])
-
-temp = np.linspace(0, len(cost[0]) * 15, len(cost[0]))
-
-# why. why is this how you call it. who made this
-m, b = np.polyfit(temp, avg_Cost, 1)
-
-print("Greatest Error:".rjust(18), "{a:.5}".format(a=np.max(cost)).rjust(10))
-print("Smallest Error:".rjust(18), "{a:.5}".format(a=np.min(cost)).rjust(10))
-print("Average Error:".rjust(18), "{a:.5}".format(a=np.average(cost)).rjust(10))
-print("Median:".rjust(18), "{a:.5}".format(a=np.median(cost)).rjust(10))
-print("STD:".rjust(18), "{a:.5}".format(a=np.std(cost)).rjust(10))
-print("Degradation Rate:".rjust(18), "{a:.5}".format(a=m * 15).rjust(10))
-
-fig = plt.figure()
-ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
-ax.plot(range(0, len(cost[0]) * 15, 15), avg_Cost)
-plt.plot(range(0, len(cost[0]) * 15, 15), m * temp + b)
-plt.show()
+main()

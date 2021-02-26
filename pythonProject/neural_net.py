@@ -3,14 +3,12 @@
 Created on Mon Feb 22 15:04:12 2021
 
 @author: Toby
+@author: Pete Downey
 """
 import numpy as np
 from keras import models
 from keras import layers
-
-
 import matplotlib.pyplot as plt
-
 
 def standerdize(data):
 
@@ -22,8 +20,6 @@ def standerdize(data):
         f += 1
 
     return data
-
-
 
 def splitData(data, yCount = 1, trainPercent = 0.9): # TODO: shuffle randomly USE traintestsplit https://www.youtube.com/watch?v=iMIWee_PXl8&ab_channel=TheSemicolon
     shape = data.shape
@@ -54,7 +50,7 @@ def splitData(data, yCount = 1, trainPercent = 0.9): # TODO: shuffle randomly US
 
 fileName = 'data.csv'
 raw_data = open(fileName, 'rt')
-data = np.loadtxt(raw_data, delimiter = ',', dtype = np.float)
+data = np.loadtxt(raw_data, delimiter = ',', dtype=np.float)
 
 data = data[:200, :]
 
@@ -66,11 +62,11 @@ data = standerdize(data)
 model = models.Sequential()
 
 # input layer
-model.add(layers.LSTM(48, input_shape = (None, 1), activation = 'relu'))
+model.add(layers.LSTM(48, input_shape = (None, 1), activation='swish'))
 
 # hidden layers
-model.add(layers.Dense(128, activation='relu'))
-model.add(layers.Dense(64))
+model.add(layers.Dense(128, activation='swish'))
+model.add(layers.Dense(64, activation='linear'))
 
 # output layer
 model.add(layers.Dense(outputCount, activation='linear')) # TODO: make output size 50
@@ -80,9 +76,10 @@ model.summary()
 
 
 model.compile(loss='mean_squared_error', optimizer='adam'  , metrics=['accuracy'])
-model.fit(train_X, train_Y, epochs=50, batch_size=64)
+model.fit(train_X, train_Y, epochs=30, batch_size=64)
 
 prediction = model.predict(test_X)
+
 
 def plot(preCount, outputCount, test_X, test_Y, prediction, index):
     
@@ -106,26 +103,30 @@ def plot(preCount, outputCount, test_X, test_Y, prediction, index):
     
     ax.axvline(x = len(test_X), color = 'green', linewidth = 2, linestyle = '--')
 
-for i in range(len(test_X)):
-    plot(outputCount, outputCount, test_X, test_Y, prediction, i)
+#for i in range(len(test_X)):
+#    plot(outputCount, outputCount, test_X, test_Y, prediction, i)
+#toby you cant just open up 50 different plots the max is 20
 
+cost = (prediction - test_Y)**2
+avg_Cost = [None] * len(cost[0])
 
+for x in range(0, len(cost[0])):
+    avg_Cost[x] = np.average(cost[:, x])
 
+temp = np.linspace(0, len(cost[0]) * 15, len(cost[0]))
 
-# use this:
-# https://www.youtube.com/watch?v=iMIWee_PXl8&ab_channel=StanfordUniversitySchoolofEngineering
-prediction = prediction
-test_Y = test_Y
+# why. why is this how you call it. who made this
+m, b = np.polyfit(temp, avg_Cost, 1)
 
-cost = [None] * len(prediction)
-most_Inaccurate = (prediction[0] - test_Y[0])**2
+print("Greatest Error:".rjust(18), "{a:.5}".format(a=np.max(cost)).rjust(10))
+print("Smallest Error:".rjust(18), "{a:.5}".format(a=np.min(cost)).rjust(10))
+print("Average Error:".rjust(18), "{a:.5}".format(a=np.average(cost)).rjust(10))
+print("Median:".rjust(18), "{a:.5}".format(a=np.median(cost)).rjust(10))
+print("STD:".rjust(18), "{a:.5}".format(a=np.std(cost)).rjust(10))
+print("Degradation Rate:".rjust(18), "{a:.5}".format(a=m * 15).rjust(10))
 
-for x in range(0, len(prediction)):
-
-    cost[x] = (prediction[x] - test_Y[x])**2
-
-print("Greatest Error:".rjust(18), "{a:.3f}".format(a=np.max(cost)).rjust(10))
-print("Smallest Error:".rjust(18), "{a:.3f}".format(a=np.min(cost)).rjust(10))
-print("Average Error:".rjust(18), "{a:.3f}".format(a=np.average(cost)).rjust(10))
-print("Median:".rjust(18), "{a:.3f}".format(a=np.median(cost)).rjust(10))
-print("STD:".rjust(18), "{a:.3f}".format(a=np.std(cost)).rjust(10))
+fig = plt.figure()
+ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
+ax.plot(range(0, len(cost[0]) * 15, 15), avg_Cost)
+plt.plot(range(0, len(cost[0]) * 15, 15), m * temp + b)
+plt.show()

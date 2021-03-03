@@ -160,8 +160,8 @@ print("Degradation Rate:".rjust(18), "{a:.5}".format(a=m * 15).rjust(10))
 fig = plt.figure()
 ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
 ax.set(title="Average cost Per Output Node", xlabel='Node', ylabel='Average Cost')
-ax.plot(range(0, len(cost[0]) * 15, 15), avg_cost_per_node)
-plt.plot(range(0, len(cost[0]) * 15, 15), m * temp + b)
+ax.plot(range(0, len(cost[0]), 1), avg_cost_per_node)
+plt.plot(range(0, len(cost[0]), 1), m * temp + b)
 plt.show()
 
 # highest cost graph
@@ -187,3 +187,5 @@ ax.plot(range(15000 - len(cost[0]) * 30, 15000, 15),
 ax.plot(range(15000 - len(cost[0]) * 15, 15000, 15), prediction[index])
 ax.axvline(x=(15000 - output_count * 15), color='green', linewidth=2, linestyle='--')
 plt.show()
+
+exit(0)

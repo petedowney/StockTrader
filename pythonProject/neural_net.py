@@ -87,12 +87,12 @@ val_X = reshaped(val_X)
 
 model = models.Sequential()
 
-#model.add(layers.Conv1D(32, kernel_size=8, strides=1, input_shape=(None, 1), activation='swish'))
-#model.add(layers.AveragePooling1D(4))
+model.add(layers.Conv1D(32, kernel_size=8, strides=1, input_shape=(None, 1), activation='swish'))
+model.add(layers.AveragePooling1D(2))
 #model.add(layers.Dense(32, activation='swish'))
 
 # input layer
-model.add(layers.LSTM(48, activation='swish', input_shape=(None, 1), return_sequences=False))
+model.add(layers.LSTM(48, activation='swish', return_sequences=False))
 #model.add(layers.LSTM(24, activation='swish'))
 
 # hidden layers
@@ -115,7 +115,7 @@ history = model.fit(train_X, train_Y, epochs=30, batch_size=64, validation_data=
 
 prediction = model.predict(test_X)
 
-for i in range(20):
+for i in range(2):
     plot(1000 - output_count, output_count, test_X, test_Y, prediction, i)
     plot(output_count, output_count, test_X, test_Y, prediction, i)
 

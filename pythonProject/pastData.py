@@ -29,7 +29,7 @@ def vectorize(bars):
     
 def getSymbols():
     
-    fileName = 'nasdaq.csv'
+    fileName = 'tech.csv'
     raw_data = open(fileName, 'rt')
     data = np.loadtxt(raw_data, usecols = (0), skiprows = 1, delimiter = ',', dtype = np.str)
     
@@ -67,4 +67,4 @@ for i in range(count):
     
     print('progress:', str(i) + "/" + str(count - 1))
 
-np.savetxt("data.csv", data, delimiter= ',', fmt='%f')
+np.savetxt("techData.csv", data, delimiter= ',', fmt='%f')

@@ -42,18 +42,26 @@ def plotLoss(history):
 
 
 def standerdize(data):
+    '''
     f = 0
-
     for n in data:
         mean = n.mean()
         ranges = max(n) - min(n)
         data[f] = ((n - mean) / ranges)
         f += 1
+    '''
+    
     ''' TODO: maybe use one scaling for whole set??
     scaler = StandardScaler()
     data = scaler.fit_transform(data)
     '''
-    return data
+    
+    mean = data.mean()
+    diff = data.max() - data.min()
+    data = (data - mean) / diff
+    inverse = lambda x: x * diff + mean
+    
+    return data, inverse
 
 
 def splitData(data, y_count):
@@ -86,9 +94,9 @@ file_name = 'techData.csv'
 raw_data = open(file_name, 'rt')
 data = np.loadtxt(raw_data, delimiter=',', dtype=np.float)
 
-output_count = 30
+output_count = 50
 
-data = standerdize(data)
+data, inverse = standerdize(data)
 
 X, Y = splitData(data, output_count)
 
@@ -191,24 +199,35 @@ plt.show()
 
 # would it work?? answer: no
 
+moneyIn = 0
 profits = []
+maxProfits = []
+invX = inverse(test_X)
 for i in range(len(test_X)):
     
-    init = test_X[i, -1]
+    init = invX[i, -1]
     
-    pred = prediction[i]
-    actual = test_Y[i]
+    pred = inverse(prediction[i])
+    actual = inverse(test_Y[i])
     
     ind = pred.argmax()
     predVal = pred[ind]
     actualVal = actual[ind]
     
-    profit = 0 if predVal < init else actualVal - init
-    profits.append(profit)
-
+    if predVal > init:
+        profits.append(actualVal - init)
+        moneyIn += init
+    
+    actualMax = actual[actual.argmax()]
+    
+    if actualMax > init:
+        maxProfits.append(actualMax - init)
+    
 profits = np.array(profits)
-sumProfit = profits.sum()
+maxProfits = np.array(maxProfits)
+profit = profits.sum()
 meanProfit = profits.mean()
+maxProfit = maxProfits.sum()
 
 
 

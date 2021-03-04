@@ -1,5 +1,5 @@
 import alpaca_trade_api as tradeapi
-import config
+import config # requires config file with alpaca-trade-api credentials
 import datetime
 import numpy as np
 
@@ -34,9 +34,6 @@ def getSymbols():
     data = np.loadtxt(raw_data, usecols = (0), skiprows = 1, delimiter = ',', dtype = np.str)
     
     return data
-
-
-
 
 
 

@@ -42,20 +42,6 @@ def plotLoss(history):
 
 
 def standerdize(data):
-    '''
-    f = 0
-    for n in data:
-        mean = n.mean()
-        ranges = max(n) - min(n)
-        data[f] = ((n - mean) / ranges)
-        f += 1
-    '''
-    
-    ''' TODO: maybe use one scaling for whole set??
-    scaler = StandardScaler()
-    data = scaler.fit_transform(data)
-    '''
-    
     mean = data.mean()
     diff = data.max() - data.min()
     data = (data - mean) / diff
@@ -111,13 +97,13 @@ train_X = reshaped(train_X)
 val_X = reshaped(val_X)
 
 model = models.Sequential()
-#
+
+# input layer (pre-network convolution)
 model.add(layers.Conv1D(32, kernel_size=8, strides=1, input_shape=(None, 1), activation='swish', padding="causal"))
 model.add(layers.AveragePooling1D(2))
 
-# input layer
+# LSTM
 model.add(layers.LSTM(48, activation='swish', input_shape=(None, 1), return_sequences=False))
-# model.add(layers.LSTM(24, activation='swish'))
 
 # hidden layers
 model.add(layers.Dense(128, activation='swish'))
@@ -136,9 +122,12 @@ history = model.fit(train_X, train_Y, epochs=30, batch_size=64, validation_data=
 
 prediction = model.predict(test_X)
 
-# for i in range(2):
-# plot(1000 - output_count, output_count, test_X, test_Y, prediction, i)
-# plot(output_count, output_count, test_X, test_Y, prediction, i)
+# examples of guesses
+'''
+for i in range(20):
+    plot(1000 - output_count, output_count, test_X, test_Y, prediction, i)
+    plot(output_count, output_count, test_X, test_Y, prediction, i)
+    '''
 
 plotLoss(history)
 
@@ -229,16 +218,10 @@ profit = profits.sum()
 meanProfit = profits.mean()
 maxProfit = maxProfits.sum()
 
-
-
-exit(0)
-
-
-
-
-
-
-
+print()
+print('Money In:'.rjust(12), "{:.2f}".format(float(moneyIn)))
+print('Profit:'.rjust(12), "{:.2f}".format(profit))
+print('Max Profit:'.rjust(12), "{:.2f}".format(maxProfit))
 
 
 

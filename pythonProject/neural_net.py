@@ -188,4 +188,43 @@ ax.plot(range(15000 - len(cost[0]) * 15, 15000, 15), prediction[index])
 ax.axvline(x=(15000 - output_count * 15), color='green', linewidth=2, linestyle='--')
 plt.show()
 
+
+# would it work?? answer: no
+
+profits = []
+for i in range(len(test_X)):
+    
+    init = test_X[i, -1]
+    
+    pred = prediction[i]
+    actual = test_Y[i]
+    
+    ind = pred.argmax()
+    predVal = pred[ind]
+    actualVal = actual[ind]
+    
+    profit = 0 if predVal < init else actualVal - init
+    profits.append(profit)
+
+profits = np.array(profits)
+sumProfit = profits.sum()
+meanProfit = profits.mean()
+
+
+
 exit(0)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

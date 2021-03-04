@@ -52,7 +52,7 @@ def standerdize(data):
         
         invList.append(lambda x: x * ranges + mean)
     
-    data = np.column_stack((data, np.array(range(len(data)))))
+    data = np.column_stack((data, np.array(range(len(data))))) # indices are kept track of to match each row to its inverse
     
     '''
     mean = data.mean()
@@ -126,8 +126,8 @@ val_Y, val_inverse = snipY(val_Y, invList)
 model = models.Sequential()
 
 # input layer (pre-network convolution)
-#model.add(layers.Conv1D(32, kernel_size=8, strides=1, input_shape=(None, 1), activation='swish', padding="causal"))
-#model.add(layers.AveragePooling1D(2))
+model.add(layers.Conv1D(32, kernel_size=8, strides=1, input_shape=(None, 1), activation='swish', padding="causal"))
+model.add(layers.AveragePooling1D(2))
 
 # LSTM
 model.add(layers.LSTM(48, activation='swish', input_shape=(None, 1), return_sequences=False))
@@ -149,11 +149,11 @@ history = model.fit(train_X, train_Y, epochs=30, batch_size=64, validation_data=
 
 prediction = model.predict(test_X)
 
-# examples of guesses
-
+# examples predictions
+'''
 for i in range(20):
     plot(1000 - output_count, output_count, test_X, test_Y, prediction, i)
-    plot(output_count, output_count, test_X, test_Y, prediction, i)
+    plot(output_count, output_count, test_X, test_Y, prediction, i)'''
     
 
 plotLoss(history)
@@ -213,7 +213,7 @@ ax.axvline(x=(15000 - output_count * 15), color='green', linewidth=2, linestyle=
 plt.show()
 
 
-# would it work?? answer: no
+# profit predictions
 
 moneyIn = 0
 profits = []

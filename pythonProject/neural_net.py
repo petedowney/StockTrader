@@ -64,6 +64,26 @@ def standerdize(data):
     return data, invList
 
 
+def distributionPlotBefore(data):
+    fig = plt.figure()
+    ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
+    ax.set(title="Data Distribution Before Scaling", xlabel='Minutes', ylabel='Stock Value')
+
+    for n in data:
+        ax.plot(range(0, 15000, 15), n)
+
+    plt.show()
+
+def distributionPlotAfter(data):
+    fig = plt.figure()
+    ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
+    ax.set(title="Data Distribution After Scaling", xlabel='Minutes', ylabel='Stock Scaled Value')
+
+    for n in data:
+        ax.plot(range(0, 15000, 15), n[:-1])
+
+    plt.show()
+
 def splitData(data, y_count):
     shape = data.shape
 
@@ -103,7 +123,11 @@ data = np.loadtxt(raw_data, delimiter=',', dtype=np.float)
 
 output_count = 50
 
+distributionPlotBefore(data)
+
 data, invList = standerdize(data)
+
+distributionPlotAfter(data)
 
 X, Y = splitData(data, output_count + 1)
 
@@ -151,9 +175,9 @@ prediction = model.predict(test_X)
 
 # examples of guesses
 
-for i in range(20):
-    plot(1000 - output_count, output_count, test_X, test_Y, prediction, i)
-    plot(output_count, output_count, test_X, test_Y, prediction, i)
+#for i in range(20):
+#    plot(1000 - output_count, output_count, test_X, test_Y, prediction, i)
+#    plot(output_count, output_count, test_X, test_Y, prediction, i)
     
 
 plotLoss(history)

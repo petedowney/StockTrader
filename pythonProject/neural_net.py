@@ -42,12 +42,26 @@ def plotLoss(history):
 
 
 def standerdize(data):
+    
+    invList = []
+    
+    for i, n in enumerate(data):
+        mean = n.mean()
+        ranges = n.max() - n.min()
+        data[i] = ((n - mean) / ranges)
+        
+        invList.append(lambda x: x * ranges + mean)
+    
+    data = np.column_stack((data, np.array(range(len(data)))))
+    
+    '''
     mean = data.mean()
     diff = data.max() - data.min()
     data = (data - mean) / diff
     inverse = lambda x: x * diff + mean
+    '''
     
-    return data, inverse
+    return data, invList
 
 
 def splitData(data, y_count):
@@ -59,7 +73,6 @@ def splitData(data, y_count):
     Y = data[:, x_till:]
 
     return (X, Y)
-
 
 def plot(pre_count, output_count, test_x, test_y, prediction, index):
     test_x = test_x[index]
@@ -75,6 +88,14 @@ def plot(pre_count, output_count, test_x, test_y, prediction, index):
     ax.plot(post_indices, prediction, color='orange')
     ax.axvline(x=len(test_x), color='green', linewidth=2, linestyle='--')
 
+def snipY(y, invList):
+    
+    thisInv = []
+    for val in y[:, -1]:
+        thisInv.append(invList[int(val)])
+    
+    
+    return (y[:, :-1], thisInv)
 
 file_name = 'techData.csv'
 raw_data = open(file_name, 'rt')
@@ -82,9 +103,9 @@ data = np.loadtxt(raw_data, delimiter=',', dtype=np.float)
 
 output_count = 50
 
-data, inverse = standerdize(data)
+data, invList = standerdize(data)
 
-X, Y = splitData(data, output_count)
+X, Y = splitData(data, output_count + 1)
 
 # split data
 train_X, test_X, train_Y, test_Y = train_test_split(X, Y, test_size=0.3)
@@ -92,15 +113,21 @@ train_X, val_X, train_Y, val_Y = train_test_split(train_X, train_Y, test_size=0.
 
 reshaped = lambda x: x.reshape(x.shape[0], x.shape[1], 1)
 
+
 test_X = reshaped(test_X)
 train_X = reshaped(train_X)
 val_X = reshaped(val_X)
 
+test_Y, test_inverse = snipY(test_Y, invList)
+train_Y, train_inverse = snipY(train_Y, invList)
+val_Y, val_inverse = snipY(val_Y, invList)
+
+
 model = models.Sequential()
 
 # input layer (pre-network convolution)
-model.add(layers.Conv1D(32, kernel_size=8, strides=1, input_shape=(None, 1), activation='swish', padding="causal"))
-model.add(layers.AveragePooling1D(2))
+#model.add(layers.Conv1D(32, kernel_size=8, strides=1, input_shape=(None, 1), activation='swish', padding="causal"))
+#model.add(layers.AveragePooling1D(2))
 
 # LSTM
 model.add(layers.LSTM(48, activation='swish', input_shape=(None, 1), return_sequences=False))
@@ -123,11 +150,11 @@ history = model.fit(train_X, train_Y, epochs=30, batch_size=64, validation_data=
 prediction = model.predict(test_X)
 
 # examples of guesses
-'''
+
 for i in range(20):
     plot(1000 - output_count, output_count, test_X, test_Y, prediction, i)
     plot(output_count, output_count, test_X, test_Y, prediction, i)
-    '''
+    
 
 plotLoss(history)
 
@@ -191,10 +218,10 @@ plt.show()
 moneyIn = 0
 profits = []
 maxProfits = []
-invX = inverse(test_X)
 for i in range(len(test_X)):
+    inverse = test_inverse[i]
     
-    init = invX[i, -1]
+    init = inverse(test_X)[i, -1]
     
     pred = inverse(prediction[i])
     actual = inverse(test_Y[i])

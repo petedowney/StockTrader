@@ -43,15 +43,17 @@ def plotLoss(history):
 
 def standerdize(data):
     
-    invList = []
+    meanList = []
+    rangeList = []
     
     for i, n in enumerate(data):
         mean = n.mean()
         ranges = n.max() - n.min()
         data[i] = ((n - mean) / ranges)
         
-        invList.append(lambda x: x * ranges + mean)
-    
+        meanList.append(mean)
+        rangeList.append(ranges)
+        
     data = np.column_stack((data, np.array(range(len(data))))) # indices are kept track of to match each row to its inverse
     
     '''
@@ -61,7 +63,7 @@ def standerdize(data):
     inverse = lambda x: x * diff + mean
     '''
     
-    return data, invList
+    return data, meanList, rangeList
 
 
 def distributionPlotBefore(data):
@@ -108,11 +110,11 @@ def plot(pre_count, output_count, test_x, test_y, prediction, index):
     ax.plot(post_indices, prediction, color='orange')
     ax.axvline(x=len(test_x), color='green', linewidth=2, linestyle='--')
 
-def snipY(y, invList):
+def snipY(y):
     
     thisInv = []
     for val in y[:, -1]:
-        thisInv.append(invList[int(val)])
+        thisInv.append(int(val))
     
     
     return (y[:, :-1], thisInv)
@@ -128,7 +130,7 @@ output_count = 50
 distributionPlotBefore(data)
 
 # standardization
-data, invList = standerdize(data)
+data, meanList, rangeList = standerdize(data)
 
 distributionPlotAfter(data)
 
@@ -145,9 +147,9 @@ test_X = reshaped(test_X)
 train_X = reshaped(train_X)
 val_X = reshaped(val_X)
 
-test_Y, test_inverse = snipY(test_Y, invList)
-train_Y, train_inverse = snipY(train_Y, invList)
-val_Y, val_inverse = snipY(val_Y, invList)
+test_Y, test_inverse = snipY(test_Y)
+train_Y, train_inverse = snipY(train_Y)
+val_Y, val_inverse = snipY(val_Y)
 
 # MODEL ========
 model = models.Sequential()
@@ -245,7 +247,8 @@ moneyIn = 0
 profits = []
 maxProfits = []
 for i in range(len(test_X)):
-    inverse = test_inverse[i]
+    invIndex = test_inverse[i]
+    inverse = lambda x: x * rangeList[invIndex] + meanList[invIndex]
     
     init = inverse(test_X)[i, -1]
     

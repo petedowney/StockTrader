@@ -64,6 +64,26 @@ def standerdize(data):
     return data, invList
 
 
+def distributionPlotBefore(data):
+    fig = plt.figure()
+    ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
+    ax.set(title="Data Distribution Before Scaling", xlabel='Minutes', ylabel='Stock Value')
+
+    for n in data:
+        ax.plot(range(0, 15000, 15), n)
+
+    plt.show()
+
+def distributionPlotAfter(data):
+    fig = plt.figure()
+    ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
+    ax.set(title="Data Distribution After Scaling", xlabel='Minutes', ylabel='Stock Scaled Value')
+
+    for n in data:
+        ax.plot(range(0, 15000, 15), n[:-1])
+
+    plt.show()
+
 def splitData(data, y_count):
     shape = data.shape
 
@@ -97,13 +117,20 @@ def snipY(y, invList):
     
     return (y[:, :-1], thisInv)
 
+
+# DATA ===========
 file_name = 'techData.csv'
 raw_data = open(file_name, 'rt')
 data = np.loadtxt(raw_data, delimiter=',', dtype=np.float)
 
 output_count = 50
 
+distributionPlotBefore(data)
+
+# standardization
 data, invList = standerdize(data)
+
+distributionPlotAfter(data)
 
 X, Y = splitData(data, output_count + 1)
 
@@ -122,7 +149,7 @@ test_Y, test_inverse = snipY(test_Y, invList)
 train_Y, train_inverse = snipY(train_Y, invList)
 val_Y, val_inverse = snipY(val_Y, invList)
 
-
+# MODEL ========
 model = models.Sequential()
 
 # input layer (pre-network convolution)
@@ -145,7 +172,7 @@ model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
 
 history = model.fit(train_X, train_Y, epochs=30, batch_size=64, validation_data=(val_X, val_Y))
 
-# stats and stuff
+# STATS =======
 
 prediction = model.predict(test_X)
 
@@ -170,7 +197,6 @@ for x in range(0, len(cost[0])):
 
 temp = np.linspace(0, len(cost[0]) * 15, len(cost[0]))
 
-# why. why is this how you call it. who made this
 m, b = np.polyfit(temp, avg_cost_per_node, 1)
 
 print("Greatest Error:".rjust(18), "{a:.5}".format(a=np.max(cost)).rjust(10))
@@ -249,11 +275,3 @@ print()
 print('Money In:'.rjust(12), "{:.2f}".format(float(moneyIn)))
 print('Profit:'.rjust(12), "{:.2f}".format(profit))
 print('Max Profit:'.rjust(12), "{:.2f}".format(maxProfit))
-
-
-
-
-
-
-
-

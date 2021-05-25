@@ -29,7 +29,7 @@ def vectorize(bars):
     
 def getSymbols():
     
-    fileName = 'tech.csv'
+    fileName = '../data/tech.csv'
     raw_data = open(fileName, 'rt')
     data = np.loadtxt(raw_data, usecols = (0), skiprows = 1, delimiter = ',', dtype = np.str)
     

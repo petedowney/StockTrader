@@ -2,6 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def smallestIndex(array):
     smallest = 0
     smallest_array = array[0]

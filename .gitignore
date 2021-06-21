@@ -131,3 +131,4 @@ dmypy.json
 # Pyre type checker
 .pyre/
 pythonProject/getData/config.py
+pythonProject/getData/test.py

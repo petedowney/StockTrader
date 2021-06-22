@@ -52,7 +52,7 @@ def PastData():
         e = (i + 1) * 100
         symbols = allSymbols[i * 100: e].tolist()
 
-        barset = api.get_barset(symbols, "5Min", limit=dataLimit)
+        barset = api.get_barset(symbols, "15Min", limit=dataLimit)
 
         vectors = []
 

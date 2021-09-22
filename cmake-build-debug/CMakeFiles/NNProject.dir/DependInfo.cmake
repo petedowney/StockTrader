@@ -5,6 +5,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
   "/Users/petedowney/Documents/GitHub/NNProject/main.cpp" "/Users/petedowney/Documents/GitHub/NNProject/cmake-build-debug/CMakeFiles/NNProject.dir/main.cpp.o"
+  "/Users/petedowney/Documents/GitHub/NNProject/model/neuralNet.cpp" "/Users/petedowney/Documents/GitHub/NNProject/cmake-build-debug/CMakeFiles/NNProject.dir/model/neuralNet.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "AppleClang")
 

@@ -6,15 +6,25 @@
 
 #IncludeRegexTransform: 
 
-/Users/petedowney/Documents/GitHub/NNProject/main.cpp
+/Users/petedowney/Documents/GitHub/NNProject/model/neuralNet.cpp
 iostream
 -
 thread
 -
-stdio.h
+fstream
+-
+string
 -
 fstream
 -
-filesystem
+vector
+-
+utility
+-
+stdexcept
+-
+sstream
+-
+numeric
 -
 

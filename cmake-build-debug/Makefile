@@ -169,6 +169,33 @@ main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/NNProject.dir/build.make CMakeFiles/NNProject.dir/main.cpp.s
 .PHONY : main.cpp.s
 
+model/neuralNet.o: model/neuralNet.cpp.o
+
+.PHONY : model/neuralNet.o
+
+# target to build an object file
+model/neuralNet.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/NNProject.dir/build.make CMakeFiles/NNProject.dir/model/neuralNet.cpp.o
+.PHONY : model/neuralNet.cpp.o
+
+model/neuralNet.i: model/neuralNet.cpp.i
+
+.PHONY : model/neuralNet.i
+
+# target to preprocess a source file
+model/neuralNet.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/NNProject.dir/build.make CMakeFiles/NNProject.dir/model/neuralNet.cpp.i
+.PHONY : model/neuralNet.cpp.i
+
+model/neuralNet.s: model/neuralNet.cpp.s
+
+.PHONY : model/neuralNet.s
+
+# target to generate assembly for a file
+model/neuralNet.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/NNProject.dir/build.make CMakeFiles/NNProject.dir/model/neuralNet.cpp.s
+.PHONY : model/neuralNet.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -181,6 +208,9 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... model/neuralNet.o"
+	@echo "... model/neuralNet.i"
+	@echo "... model/neuralNet.s"
 .PHONY : help
 
 

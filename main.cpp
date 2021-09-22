@@ -5,8 +5,7 @@
 #include <fstream>
 #include <filesystem>
 
-
-//#include <conio.h>
+#include "model/neuralNet.h"
 
 using namespace std;
 
@@ -29,14 +28,14 @@ using namespace std;
 
 int main() {
 
+    //std::thread first (updateNN);
+    //std::thread second (predict);
 
-    std::cout << "Hello, World!" << std::endl;
 
-    std::thread first (updateNN);
-    std::thread second (predict);
+    NeuralNet();
 
-    first.join();
-    second.join();
+    //first.join();
+    //second.join();
 
     return 0;
 }

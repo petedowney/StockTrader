@@ -3,3 +3,6 @@
 
 CMakeFiles/NNProject.dir/main.cpp.o
  /Users/petedowney/Documents/GitHub/NNProject/main.cpp
+ /Users/petedowney/Documents/GitHub/NNProject/model/neuralNet.h
+CMakeFiles/NNProject.dir/model/neuralNet.cpp.o
+ /Users/petedowney/Documents/GitHub/NNProject/model/neuralNet.cpp

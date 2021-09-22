@@ -83,6 +83,12 @@
 		<Unit filename="/Users/petedowney/Documents/GitHub/NNProject/main.cpp">
 			<Option target="NNProject"/>
 		</Unit>
+		<Unit filename="/Users/petedowney/Documents/GitHub/NNProject/model/neuralNet.cpp">
+			<Option target="NNProject"/>
+		</Unit>
+		<Unit filename="/Users/petedowney/Documents/GitHub/NNProject/model/neuralNet.h">
+			<Option target="NNProject"/>
+		</Unit>
 		<Unit filename="/Users/petedowney/Documents/GitHub/NNProject/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>

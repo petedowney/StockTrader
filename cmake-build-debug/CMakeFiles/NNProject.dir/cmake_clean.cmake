@@ -1,5 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/NNProject.dir/main.cpp.o"
+  "CMakeFiles/NNProject.dir/model/neuralNet.cpp.o"
   "NNProject"
   "NNProject.pdb"
 )

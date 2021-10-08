@@ -5,11 +5,12 @@
 #include <fstream>
 #include <filesystem>
 
+
 #include "model/neuralNet.h"
 
 using namespace std;
 
-[[noreturn]] void updateNN() {
+void updateNN() {
 
     while (true) {
 
@@ -18,7 +19,7 @@ using namespace std;
     }
 }
 
-[[noreturn]] void predict() {
+void predict() {
 
     while (true) {
         std::cout << "working2" << std::endl;

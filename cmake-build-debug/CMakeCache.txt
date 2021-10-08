@@ -221,14 +221,29 @@ CMAKE_STRIP:FILEPATH=/Library/Developer/CommandLineTools/usr/bin/strip
 // Studio IDE projects all commands are done without /nologo.
 CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
 
+//The directory containing a CMake configuration file for Eigen3.
+Eigen3_DIR:PATH=/usr/local/share/eigen3/cmake
+
 //Value Computed by CMake
 NNProject_BINARY_DIR:STATIC=/Users/petedowney/Documents/GitHub/NNProject/cmake-build-debug
 
 //Value Computed by CMake
 NNProject_SOURCE_DIR:STATIC=/Users/petedowney/Documents/GitHub/NNProject
 
+//pkg-config executable
+PKG_CONFIG_EXECUTABLE:FILEPATH=/usr/local/bin/pkg-config
+
 //Path to a program.
 ProcessorCount_cmd_sysctl:FILEPATH=/usr/sbin/sysctl
+
+//Path to a library.
+TENSORFLOW_LIB:FILEPATH=TENSORFLOW_LIB-NOTFOUND
+
+//Path to a library.
+pkgcfg_lib_Eigen3_tensorflow:FILEPATH=/usr/local/Cellar/libtensorflow/2.6.0/lib/libtensorflow.so
+
+//Path to a library.
+pkgcfg_lib_TensorFlow_tensorflow:FILEPATH=/usr/local/Cellar/libtensorflow/2.6.0/lib/libtensorflow.so
 
 
 ########################
@@ -376,6 +391,93 @@ CMAKE_STRIP-ADVANCED:INTERNAL=1
 CMAKE_UNAME:INTERNAL=/usr/bin/uname
 //ADVANCED property for variable: CMAKE_VERBOSE_MAKEFILE
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
+Eigen3_CFLAGS:INTERNAL=-I/usr/local/Cellar/eigen/3.4.0_1/include/eigen3
+Eigen3_CFLAGS_I:INTERNAL=
+Eigen3_CFLAGS_OTHER:INTERNAL=
+Eigen3_FOUND:INTERNAL=1
+Eigen3_INCLUDEDIR:INTERNAL=
+Eigen3_INCLUDE_DIRS:INTERNAL=/usr/local/Cellar/eigen/3.4.0_1/include/eigen3
+Eigen3_LDFLAGS:INTERNAL=
+Eigen3_LDFLAGS_OTHER:INTERNAL=
+Eigen3_LIBDIR:INTERNAL=
+Eigen3_LIBRARIES:INTERNAL=
+Eigen3_LIBRARY_DIRS:INTERNAL=
+Eigen3_LIBS:INTERNAL=
+Eigen3_LIBS_L:INTERNAL=
+Eigen3_LIBS_OTHER:INTERNAL=
+Eigen3_LIBS_PATHS:INTERNAL=
+Eigen3_MODULE_NAME:INTERNAL=eigen3
+Eigen3_PREFIX:INTERNAL=/usr/local/Cellar/eigen/3.4.0_1
+Eigen3_STATIC_CFLAGS:INTERNAL=-I/usr/local/Cellar/eigen/3.4.0_1/include/eigen3
+Eigen3_STATIC_CFLAGS_I:INTERNAL=
+Eigen3_STATIC_CFLAGS_OTHER:INTERNAL=
+Eigen3_STATIC_INCLUDE_DIRS:INTERNAL=/usr/local/Cellar/eigen/3.4.0_1/include/eigen3
+Eigen3_STATIC_LDFLAGS:INTERNAL=
+Eigen3_STATIC_LDFLAGS_OTHER:INTERNAL=
+Eigen3_STATIC_LIBDIR:INTERNAL=
+Eigen3_STATIC_LIBRARIES:INTERNAL=
+Eigen3_STATIC_LIBRARY_DIRS:INTERNAL=
+Eigen3_STATIC_LIBS:INTERNAL=
+Eigen3_STATIC_LIBS_L:INTERNAL=
+Eigen3_STATIC_LIBS_OTHER:INTERNAL=
+Eigen3_STATIC_LIBS_PATHS:INTERNAL=
+Eigen3_VERSION:INTERNAL=3.4.0
+Eigen3_eigen3_INCLUDEDIR:INTERNAL=
+Eigen3_eigen3_LIBDIR:INTERNAL=
+Eigen3_eigen3_PREFIX:INTERNAL=
+Eigen3_eigen3_VERSION:INTERNAL=
+Eigen3_tensorflow_INCLUDEDIR:INTERNAL=
+Eigen3_tensorflow_LIBDIR:INTERNAL=
+Eigen3_tensorflow_PREFIX:INTERNAL=
+Eigen3_tensorflow_VERSION:INTERNAL=
+//Details about finding PkgConfig
+FIND_PACKAGE_MESSAGE_DETAILS_PkgConfig:INTERNAL=[/usr/local/bin/pkg-config][v0.29.2()]
+//ADVANCED property for variable: PKG_CONFIG_EXECUTABLE
+PKG_CONFIG_EXECUTABLE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: ProcessorCount_cmd_sysctl
 ProcessorCount_cmd_sysctl-ADVANCED:INTERNAL=1
+TensorFlow_CFLAGS:INTERNAL=-I/usr/local/Cellar/libtensorflow/2.6.0/include
+TensorFlow_CFLAGS_I:INTERNAL=
+TensorFlow_CFLAGS_OTHER:INTERNAL=
+TensorFlow_FOUND:INTERNAL=1
+TensorFlow_INCLUDEDIR:INTERNAL=
+TensorFlow_INCLUDE_DIRS:INTERNAL=/usr/local/Cellar/libtensorflow/2.6.0/include
+TensorFlow_LDFLAGS:INTERNAL=-L/usr/local/Cellar/libtensorflow/2.6.0/lib;-ltensorflow
+TensorFlow_LDFLAGS_OTHER:INTERNAL=
+TensorFlow_LIBDIR:INTERNAL=
+TensorFlow_LIBRARIES:INTERNAL=tensorflow
+TensorFlow_LIBRARY_DIRS:INTERNAL=/usr/local/Cellar/libtensorflow/2.6.0/lib
+TensorFlow_LIBS:INTERNAL=
+TensorFlow_LIBS_L:INTERNAL=
+TensorFlow_LIBS_OTHER:INTERNAL=
+TensorFlow_LIBS_PATHS:INTERNAL=
+TensorFlow_MODULE_NAME:INTERNAL=tensorflow
+TensorFlow_PREFIX:INTERNAL=
+TensorFlow_STATIC_CFLAGS:INTERNAL=-I/usr/local/Cellar/libtensorflow/2.6.0/include
+TensorFlow_STATIC_CFLAGS_I:INTERNAL=
+TensorFlow_STATIC_CFLAGS_OTHER:INTERNAL=
+TensorFlow_STATIC_INCLUDE_DIRS:INTERNAL=/usr/local/Cellar/libtensorflow/2.6.0/include
+TensorFlow_STATIC_LDFLAGS:INTERNAL=-L/usr/local/Cellar/libtensorflow/2.6.0/lib;-ltensorflow
+TensorFlow_STATIC_LDFLAGS_OTHER:INTERNAL=
+TensorFlow_STATIC_LIBDIR:INTERNAL=
+TensorFlow_STATIC_LIBRARIES:INTERNAL=tensorflow
+TensorFlow_STATIC_LIBRARY_DIRS:INTERNAL=/usr/local/Cellar/libtensorflow/2.6.0/lib
+TensorFlow_STATIC_LIBS:INTERNAL=
+TensorFlow_STATIC_LIBS_L:INTERNAL=
+TensorFlow_STATIC_LIBS_OTHER:INTERNAL=
+TensorFlow_STATIC_LIBS_PATHS:INTERNAL=
+TensorFlow_VERSION:INTERNAL=2.6.0
+TensorFlow_tensorflow_INCLUDEDIR:INTERNAL=
+TensorFlow_tensorflow_LIBDIR:INTERNAL=
+TensorFlow_tensorflow_PREFIX:INTERNAL=
+TensorFlow_tensorflow_VERSION:INTERNAL=
+__pkg_config_arguments_Eigen3:INTERNAL=REQUIRED;eigen3
+__pkg_config_arguments_TensorFlow:INTERNAL=REQUIRED;tensorflow
+__pkg_config_checked_Eigen3:INTERNAL=1
+__pkg_config_checked_TensorFlow:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_Eigen3_tensorflow
+pkgcfg_lib_Eigen3_tensorflow-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_TensorFlow_tensorflow
+pkgcfg_lib_TensorFlow_tensorflow-ADVANCED:INTERNAL=1
+prefix_result:INTERNAL=
 

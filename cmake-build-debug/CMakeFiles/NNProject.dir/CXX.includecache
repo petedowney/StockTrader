@@ -6,25 +6,3 @@
 
 #IncludeRegexTransform: 
 
-/Users/petedowney/Documents/GitHub/NNProject/model/neuralNet.cpp
-iostream
--
-thread
--
-fstream
--
-string
--
-fstream
--
-vector
--
-utility
--
-stdexcept
--
-sstream
--
-numeric
--
-

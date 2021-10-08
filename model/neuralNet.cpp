@@ -11,9 +11,37 @@
 #include <stdexcept> // std::runtime_error
 #include <sstream> // std::stringstream
 #include <numeric>
+#include <random>
 
+#include <stdio.h>
+#include <tensorflow/c/c_api.h>
+#include <tensorflow/cc/ops/standard_ops.h>
+//#include <tensorflow/core/framework/tensor.h>
+
+using tensorflow::Scope;
+//using tensorflow::Output;
+//using tensorflow::Tensor;
+
+//using tensorflow::ops::Const;
+//using tensorflow::ops::MatMul;
+//using tensorflow::ClientSession;
 
 using namespace std;
+
+vector<vector<float>> transpose(vector<vector<float>> data2) {
+
+    vector<vector<float>> dataCopy( data2[0].size() , vector<float> (data2.size()));
+
+    for (int y = 0; y < data2.size(); y++) {
+
+        for (int x = 0; x < data2[0].size(); x++) {
+
+            dataCopy[x][y] = data2[y][x];
+        }
+    }
+
+    return dataCopy;
+}
 
 //modified  from
 //https://www.gormanalysis.com/blog/reading-and-writing-csv-files-with-cpp/
@@ -71,38 +99,100 @@ standerdize(vector<vector<float>> data) {
         }
     }
 
+    //TODO
     //data = np.column_stack(
     //        (data, np.array(range(len(data)))))  # indices are kept track of to match each row to its inverse
 
     return {data, meanList, rangeList};
 }
 
+std::tuple<std::vector<std::vector<float>>, std::vector<vector<float>>>
+        splitData(std::vector<std::vector<float>> data, int splitPoint) {
+
+    int xTill = (int)data[0].size() - splitPoint;
+
+    std::vector<std::vector<float>> tData = transpose(data);
+
+    std::vector<std::vector<float>> x(xTill, vector<float>(130));
+    std::vector<std::vector<float>> y(1000 - xTill, vector<float>(130));
+
+
+    for (int xData = 0; xData < data.size(); xData++) {
+
+        if (xData < xTill)
+            x[xData] = tData[xData];
+        else
+            y[xData - xTill] = tData[xData - xTill];
+    }
+
+    //FIXME: transpose spitting out error
+    cout << x[130][50] << endl;
+
+    x = transpose(x);
+    y = transpose(y);
+    return {x, y};
+}
+
+/**
+ * splits data up into training and test data
+ * @param xData xdata
+ * @param yData y data
+ * @param distribution how much is train vs test (0 - 100)
+ * @return
+ */
+std::tuple<std::vector<std::vector<float>>, std::vector<vector<float>>, std::vector<vector<float>>, std::vector<vector<float>>>
+splitDataRandom(std::vector<std::vector<float>> xData, std::vector<std::vector<float>> yData, int distribution) {
+
+    assert(xData.size() == yData.size());
+
+    std::vector<std::vector<float>> trainX, trainY, testX, testY;
+
+    for (int n = 0; n < xData.size(); n++) {
+
+        if (rand()%100 > distribution) {
+            trainX.emplace_back(xData[n]);
+            trainY.emplace_back(yData[n]);
+        }
+        else {
+            testX.emplace_back(xData[n]);
+            testY.emplace_back(yData[n]);
+        }
+
+    }
+
+    return {trainX, testX, trainY, testY};
+}
+
 
 [[noreturn]] void NeuralNet() {
 
-// DATA ===========
-
+    // DATA ===========
     const char *fileName = "/Users/petedowney/Documents/GitHub/NNProject/data/data.csv";
-
     vector<vector<float>> data = readCSV(fileName);
 
 
-// standardization
-     auto [data2, meanList, rangeList] = standerdize(data);
+    // standardization
+    auto [data2, meanList, rangeList] = standerdize(data);
 
-     //I hate this
-     data = data2;
-     data2.clear();
+    //I hate this
+    data = data2;
+    data2.clear();
+
+    auto [xData, yData] = splitData(data, 50 + 1);
+
+    auto [trainXTemp, testX, trainYTemp, testY] = splitDataRandom(xData, yData, 30);
+    auto [trainX, valX, trainY, valY] = splitDataRandom(trainXTemp, trainYTemp, 50);
+
+    trainXTemp.clear();
+    trainYTemp.clear();
+
+
+    auto root = Scope::NewRootScope();
 
 
     /*
-    methods.distributionPlotAfter(data);
-
-    X, Y = methods.splitData(data, output_count + 1);
 
 // split data
-    train_X, test_X, train_Y, test_Y = train_test_split(X, Y, test_size = 0.3);
-    train_X, val_X, train_Y, val_Y = train_test_split(train_X, train_Y, test_size = 0.5);
 
     reshaped = lambda;
 

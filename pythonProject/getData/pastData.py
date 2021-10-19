@@ -40,10 +40,9 @@ def getSymbols():
 
 
 
-def PastData():
+def PastData(allSymbols=getSymbols()):
     dataLimit = 1000  # amount of samples
 
-    allSymbols = getSymbols()
     data = None
 
     count = len(allSymbols) // 100 + 1
@@ -68,6 +67,33 @@ def PastData():
         #print('progress:', str(i) + "/" + str(count - 1))
 
     np.savetxt("data/techData.csv", data, delimiter=',', fmt='%f')
+
+def PastData2(allSymbols=getSymbols()):
+    dataLimit = 1000  # amount of samples
+
+    data = None
+
+    count = len(allSymbols) // 100 + 1
+
+        e = (i + 1) * 100
+        symbols = allSymbols[i * 100: e].tolist()
+
+        barset = api.get_barset(symbols, "15Min", limit=dataLimit)
+
+        vectors = []
+
+        for symbol in symbols:
+            vector = vectorize(barset[symbol])
+            if (len(vector) == dataLimit):
+                vectors.append(vector)
+
+        arr = np.row_stack(tuple(vectors))
+
+        data = arr if (i == 0) else np.row_stack((data, arr))
+
+        #print('progress:', str(i) + "/" + str(count - 1))
+
+    return data;
 
 
 if __name__ == "__main__":

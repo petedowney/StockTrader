@@ -22,12 +22,12 @@ def NeuralNet():
 
     output_count = 50
 
-    methods.distributionPlotBefore(data)
+    #methods.distributionPlotBefore(data)
 
     # standardization
     data, meanList, rangeList = methods.standerdize(data)
 
-    methods.distributionPlotAfter(data)
+    #methods.distributionPlotAfter(data)
 
     X, Y = methods.splitData(data, output_count + 1)
 

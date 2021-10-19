@@ -3,32 +3,45 @@ import threading
 import time
 import multiprocessing
 
-from pythonProject import neuralNet
-from pythonProject.getData import pastData
+from pythonProject import neuralNet, prediction
+from pythonProject.getData import pastData, currentData
+
 
 format = "%(asctime)s: %(message)s"
 logging.basicConfig(format=format, level=logging.INFO, datefmt="%H:%M:%S")
 
+data = pastData.PastData2()
 
-def UpdateNN():
+class Main:
 
-    x = 0
-    while True:
-        x += 1
-        logging.info("Retrieving Data ")
-        pastData.PastData()
+    @staticmethod
+    def ListenToData():
+        currentData.Data.listen()
 
-        logging.info("Updating NN")
-        neuralNet.NeuralNet()
+    @staticmethod
+    def UpdateNN():
 
-        logging.info(str(x) + " Cycles Completed")
-        time.sleep(10 * 60)
+        x = 0
+        while True:
+            x += 1
+            logging.info("Retrieving Data ")
+            pastData.PastData()
 
+            logging.info("Updating NN")
+            neuralNet.NeuralNet()
 
-def Predict():
-    while True:
-        time.sleep(10)
-        logging.info("asdf")
+            logging.info(str(x) + " Cycles Completed")
+            time.sleep(10 * 60)
+
+    @staticmethod
+    def Predict():
+
+        print("asdf")
+
+        while True:
+            time.sleep(10)
+            Main.data = prediction.updateData(data)
+            prediction.getPredictionData(data)
 
 
 if __name__ == "__main__":
@@ -37,10 +50,13 @@ if __name__ == "__main__":
 
     threads = list()
 
-    updateNN = threading.Thread(target=UpdateNN)
+    listenToData = threading.Thread(target=Main.ListenToData)
+    threads.append(listenToData)
+
+    updateNN = threading.Thread(target=Main.UpdateNN)
     threads.append(updateNN)
 
-    predict = threading.Thread(target=Predict)
+    predict = threading.Thread(target=Main.Predict)
     threads.append(predict)
 
     updateNN.start()

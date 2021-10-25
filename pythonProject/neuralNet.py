@@ -14,6 +14,7 @@ from sklearn.model_selection import train_test_split
 
 from pythonProject import methods
 
+# ASKTOBY
 def NeuralNet():
     # DATA ===========
     file_name = 'data/techData.csv'

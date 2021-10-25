@@ -1,14 +1,14 @@
+from pythonProject.getData import config
+
 import alpaca_trade_api as tradeapi
-import datetime
 import numpy as np
 
-from pythonProject.getData import config
 # requires config file with alpaca-trade-api credentials
-
+# connects to the alpaca api account
 def connectToAccount():
     try:
 
-        api = tradeapi.REST(config.API_KEY, config.SECRET_KEY, base_url='https://paper-api.alpaca.markets')
+        api = tradeapi.REST(config.APIKEY, config.SECRETKEY, base_url='https://paper-api.alpaca.markets')
         api.list_positions()
 
         #print("Account Accessed")
@@ -19,16 +19,17 @@ def connectToAccount():
         print("Invalid Keys")
         exit(1)
 
+
 api, account = connectToAccount()
 
-
-
+# ASKTOBY
 def vectorize(bars):
     arr = np.zeros(len(bars))
     for i, bar in enumerate(bars):
         arr[i] = bar._raw['o'];
     return arr
-    
+
+# gets the different tech companies from the tech.csv
 def getSymbols():
 
     #the source directory used is the one used from the program that runs it
@@ -38,8 +39,7 @@ def getSymbols():
     
     return data
 
-
-
+# gets past data from the alpaca trade api and saves it to a file
 def PastData(allSymbols=getSymbols()):
     dataLimit = 1000  # amount of samples
 
@@ -48,10 +48,11 @@ def PastData(allSymbols=getSymbols()):
     count = len(allSymbols) // 100 + 1
     for i in range(count):
 
+        # ASKTOBY
         e = (i + 1) * 100
         symbols = allSymbols[i * 100: e].tolist()
 
-        barset = api.get_barset(symbols, "15Min", limit=dataLimit)
+        barset = api.get_barset(symbols, "1Min", limit=dataLimit)
 
         vectors = []
 
@@ -68,17 +69,20 @@ def PastData(allSymbols=getSymbols()):
 
     np.savetxt("data/techData.csv", data, delimiter=',', fmt='%f')
 
+#gets past data from alpaca trade api but returns the data instead of saving to a file
 def PastData2(allSymbols=getSymbols()):
     dataLimit = 1000  # amount of samples
 
     data = None
 
     count = len(allSymbols) // 100 + 1
+    for i in range(count):
 
+        # ASKTOBY
         e = (i + 1) * 100
         symbols = allSymbols[i * 100: e].tolist()
 
-        barset = api.get_barset(symbols, "15Min", limit=dataLimit)
+        barset = api.get_barset(symbols, "1Min", limit=dataLimit)
 
         vectors = []
 
@@ -93,9 +97,10 @@ def PastData2(allSymbols=getSymbols()):
 
         #print('progress:', str(i) + "/" + str(count - 1))
 
-    return data;
+    dataDictionary = {}
+    for x in range(0, len(data)):
+        dataDictionary["AM." + allSymbols[x]] = data[0]
 
+    return dataDictionary;
 
-if __name__ == "__main__":
-    PastData()
 

@@ -10,6 +10,7 @@ from sklearn.model_selection import train_test_split
 
 from pythonProject import methods
 
+# All the old output data for the Junior year Research Project
 # DATA ===========
 file_name = 'data/techData.csv'
 raw_data = open(file_name, 'rt')

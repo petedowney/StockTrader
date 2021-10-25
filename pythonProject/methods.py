@@ -2,7 +2,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 def smallestIndex(array):
     smallest = 0
     smallest_array = array[0]
@@ -35,18 +34,19 @@ def standerdize(data):
     meanList = []
     rangeList = []
 
+    data2 = np.copy(data)
     for i, n in enumerate(data):
         mean = n.mean()
         ranges = n.max() - n.min()
-        data[i] = ((n - mean) / ranges)
+        data2[i] = ((n - mean) / ranges)
 
         meanList.append(mean)
         rangeList.append(ranges)
 
-    data = np.column_stack(
-        (data, np.array(range(len(data)))))  # indices are kept track of to match each row to its inverse
+    data2 = np.column_stack(
+        (data2, np.array(range(len(data2)))))  # indices are kept track of to match each row to its inverse
 
-    return data, meanList, rangeList
+    return data2, meanList, rangeList
 
 
 def distributionPlotBefore(data):

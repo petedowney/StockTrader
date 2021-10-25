@@ -8,20 +8,28 @@ from pythonProject.getData import pastData, currentData
 
 from pythonProject import methods
 
+
+# Updates the data for predictions
 def updateData(data):
 
-    np.append(data, currentData.Data.getNewData())
-    data = data[:, -1000:]
+    x = currentData.Data.getNewData()
 
+    for keys in x.keys():
+        data[keys] = np.append(data.get(keys), x.get(keys))
+        data[keys] = data[keys][-1000:]
+
+    return data
+
+# With the updated data create new predictions
 def getPredictionData(data):
 
     # standardization
-    data, meanList, rangeList = methods.standerdize(data)
+    sData, meanList, rangeList = methods.standerdize(data)
 
 
     reshaped = lambda x: x.reshape(x.shape[0], x.shape[1], 1)
 
-    data = reshaped(data)
+    sData = reshaped(sData)
 
     #code from:
     #https://machinelearningmastery.com/save-load-keras-deep-learning-models/
@@ -31,7 +39,6 @@ def getPredictionData(data):
     model = model_from_json(loaded_model_json)
     model.load_weights("data/model.h5")
 
-    prediction = model.predict(data)
+    prediction = model.predict(sData)
 
-    print(data[0])
-    print(prediction[0])
+    return prediction

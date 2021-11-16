@@ -9,20 +9,26 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 
 from pythonProject import methods
+from pythonProject.getData import pastData, config
+import alpaca_trade_api as tradeapi
 
 
-hello = [[y for y in range(100)] for x in range(100)]
 
-hello = np.array(hello)
 
-print(hello)
+api = None
+try:
+    api = tradeapi.REST(config.APIKEY, config.SECRETKEY,
+                        base_url='https://paper-api.alpaca.markets',
+                        api_version="v2")
+    api.list_positions()
 
-X, Y = methods.splitData(hello, 21)
+except tradeapi.rest.APIError:
+    print("Invalid Keys")
+    exit(1)
 
-reshaped = lambda f: f.reshape(f.shape[0], f.shape[1], 1)
+assert api is not None
 
-X = np.array(reshaped(X))
-Y = np.array(reshaped(Y))
 
-#print(X)
-print(Y)
+data = pastData.PastData(api, np.array(["GME", "APPL", "GOOGL"]), 10)
+
+#print(data)

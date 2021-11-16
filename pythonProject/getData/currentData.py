@@ -9,8 +9,6 @@ class Data:
 
     # Determines which companies the program will listen to
     outPutMessage = {}
-    standardListen = ["AM.AAPL"]
-    listenCompanies = []
 
     # When the listening thread is opened will validate the connection
     # and begin listening to the listenCompanies
@@ -25,7 +23,8 @@ class Data:
 
         ws.send(json.dumps(auth_data))
 
-        listen_message = {"action": "listen", "data": {"streams": ["AM.AAPL"]}}
+        listen_message = {"action": "listen",
+                          "data": {"streams": ["AM." + x for x in main.Main.listening]}}
         ws.send(json.dumps(listen_message))
 
     # On a message will update the outPutMessage with the new data
@@ -50,14 +49,13 @@ class Data:
 
     # just logs that the connection has been closed
     @staticmethod
-    def on_close(ws):
+    def onClose(ws):
         print("closed connection")
 
     # will listen to companies for new data based on the standerdListen
     @staticmethod
-    def listen(listenTo=standardListen):
+    def listen():
 
-        Data.listenCompanies = listenTo
         socket = "wss://data.alpaca.markets/stream"
         ws = websocket.WebSocketApp(socket, on_open=Data.onOpen, on_message=Data.onMessage, on_close=Data.onClose)
         ws.run_forever()

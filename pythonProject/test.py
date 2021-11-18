@@ -29,6 +29,9 @@ except tradeapi.rest.APIError:
 assert api is not None
 
 
-data = pastData.PastData(api, np.array(["GME", "APPL", "GOOGL"]), 10)
+data = pastData.PastData2(api, np.array(["GME", "AAPL", "TSLA"]), 10)
 
+print(data)
+
+x = 1
 #print(data)

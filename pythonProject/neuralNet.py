@@ -17,7 +17,7 @@ from pythonProject import methods
 # ASKTOBY
 def NeuralNet():
     # DATA ===========
-    file_name = 'data/techData.csv'
+    file_name = 'data/techDataO.csv'
     raw_data = open(file_name, 'rt')
     data = np.loadtxt(raw_data, delimiter=',', dtype=np.float)
 

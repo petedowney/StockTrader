@@ -42,20 +42,24 @@ def PastData(api, allSymbols=getSymbols(), dataLimit=1000):
                 vectors.append(vector)
                 vectors2.append(vector2)
 
-        arr = np.row_stack(tuple(vectors))
+        arr1 = np.row_stack(tuple(vectors))
+        arr2 = np.row_stack(tuple(vectors2))
 
-        data = arr if (i == 0) else np.row_stack((data, arr))
+        dataO = arr1 if (i == 0) else np.row_stack((data, arr1))
+        dataV = arr2 if (i == 0) else np.row_stack((dataV, arr2))
 
+        #finalData = np.stack((dataO, dataV))
         #print('progress:', str(i) + "/" + str(count - 1))
+
+
     print(data)
-    np.savetxt("data/techData.csv", data, delimiter=',', fmt='%f')
+    np.savetxt("data/techDataO.csv", dataO, delimiter=',', fmt='%f')
+    np.savetxt("data/techDataV.csv", dataV, delimiter=',', fmt='%f')
 
 #gets past data from alpaca trade api but returns the data instead of saving to a file
-def PastData2(api, allSymbols=getSymbols()):
+def PastData2(api, allSymbols=getSymbols(), dataLimit=1000):
 
     print(allSymbols)
-
-    dataLimit = 1000  # amount of samples
 
     data = None
 
@@ -73,22 +77,29 @@ def PastData2(api, allSymbols=getSymbols()):
         barset = api.get_barset(symbols, "1Min", limit=dataLimit)
 
         vectors = []
+        vectors2 = []
 
         for symbol in symbols:
             vector = vectorize(barset[symbol], "o")
+            vector2 = vectorize(barset[symbol], "v")
             if (len(vector) == dataLimit):
                 vectors.append(vector)
+                vectors2.append(vector2)
 
         arr = np.row_stack(tuple(vectors))
+        arr2 = np.row_stack(tuple(vectors2))
 
-        data = arr if (i == 0) else np.row_stack((data, arr))
+        dataO = arr if (i == 0) else np.row_stack((dataO, arr))
+        dataV = arr2 if (i == 0) else np.row_stack((dataV, arr2))
+
+        data = np.stack((dataO, dataV))
 
         #print('progress:', str(i) + "/" + str(count - 1))
 
     dataDictionary = {}
 
-    for x in range(0, len(data)):
-        dataDictionary["AM." + allSymbols[x]] = data[x]
+    for x in range(0, len(data)+1):
+        dataDictionary["AM." + allSymbols[x]] = data[:,x,:]
 
     return dataDictionary;
 

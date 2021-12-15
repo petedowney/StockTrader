@@ -1,6 +1,18 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import random
+
+
+#
+def isEven(num):
+    if num == 0:
+        return True
+    elif abs(num) == 1:
+        return False
+    else:
+        return isEven(abs(num) - 2)
+
 
 def smallestIndex(array):
     smallest = 0
@@ -29,23 +41,33 @@ def plotLoss(history):
     ax.plot(history.history['loss'])
     ax.plot(history.history['val_loss'], color='red')
 
+def trunkate(data):
+
+    for key in data.keys():
+        data[key] = data[key][0]
+
+    return data
 
 def standerdize(data):
     meanList = []
     rangeList = []
 
     data2 = np.copy(data)
-    for i, n in enumerate(data):
-        mean = n.mean()
-        ranges = n.max() - n.min()
-        data2[i] = ((n - mean) / ranges)
 
-        meanList.append(mean)
-        rangeList.append(ranges)
+    for j, subD in enumerate(data):
+        for i, n in enumerate(subD):
+            mean = n.mean()
+            ranges = n.max() - n.min()
+            data2[j, i] = ((n - mean) / ranges)
 
-    data2 = np.column_stack(
-        (data2, np.array(range(len(data2)))))  # indices are kept track of to match each row to its inverse
+            meanList.append(mean)
+            rangeList.append(ranges)
 
+        #data2[j] = np.column_stack(
+        #    (data2[j], np.array(range(len(data2[j])))))  # indices are kept track of to match each row to its inverse
+
+
+    #TODO fix mean and range list
     return data2, meanList, rangeList
 
 
@@ -74,10 +96,12 @@ def distributionPlotAfter(data):
 def splitData(data, y_count):
     shape = data.shape
 
-    x_till = shape[1] - y_count
+    x_till = shape[2] - y_count
 
-    X = data[:, :x_till]
-    Y = data[:, x_till:]
+
+
+    X = np.array(data[:, :, :x_till])
+    Y = np.array(data[:, :, x_till:])
 
     return (X, Y)
 
@@ -99,7 +123,44 @@ def plot(pre_count, output_count, test_x, test_y, prediction, index):
 
 def snipY(y):
     thisInv = []
-    for val in y[:, -1]:
-        thisInv.append(int(val))
+    for val in y[:, :, -1]:
+        thisInv.append(val)
 
-    return (y[:, :-1], thisInv)
+    return y[:, :, :-1], thisInv
+
+def randomSplit3rdD(x, y, splitpercent):
+
+    x1 = None
+    x2 = None
+    y1 = None
+    y2 = None
+
+    len = x.shape[1]
+    n1 = 0
+    n2 = 0
+    for n in range(0, len):
+
+        if random.random() < splitpercent:
+            if n1 == 0:
+                x1 = x[:, n, :]
+                y1 = y[:, n, :]
+            elif n1 == 1:
+                x1 = np.stack((x1, x[:, n, :]), axis=1)
+                y1 = np.stack((y1, y[:, n, :]), axis=1)
+            else:
+                x1 = np.hstack((x1, np.reshape(x[:, n, :], (x.shape[0], 1, x.shape[2]))))
+                y1 = np.hstack((y1, np.reshape(y[:, n, :], (y.shape[0], 1, y.shape[2]))))
+            n1 += 1
+        else:
+            if n2 == 0:
+                x2 = x[:, n, :]
+                y2 = y[:, n, :]
+            elif n2 == 1:
+                x2 = np.stack((x2, x[:, n, :]), axis=1)
+                y2 = np.stack((y2, y[:, n, :]), axis=1)
+            else:
+                x2 = np.hstack((x2, np.reshape(x[:, n, :], (x.shape[0], 1, x.shape[2]))))
+                y2 = np.hstack((y2, np.reshape(y[:, n, :], (y.shape[0], 1, y.shape[2]))))
+            n2 += 1
+
+    return x1, x2, y1, y2

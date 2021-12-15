@@ -10,6 +10,9 @@ from keras import models
 from keras import layers
 import matplotlib.pyplot as plt
 
+#TODO
+#blackman showles model
+
 from sklearn.model_selection import train_test_split
 
 from pythonProject import methods
@@ -19,28 +22,34 @@ def NeuralNet():
     # DATA ===========
     file_name = 'data/techDataO.csv'
     raw_data = open(file_name, 'rt')
-    data = np.loadtxt(raw_data, delimiter=',', dtype=np.float)
+    dataO = np.loadtxt(raw_data, delimiter=',', dtype=np.float)
+
+    file_name = 'data/techDataV.csv'
+    raw_data = open(file_name, 'rt')
+    dataV = np.loadtxt(raw_data, delimiter=',', dtype=np.float)
+
+    data = np.stack((dataO, dataV))
 
     output_count = 50
-
-    #methods.distributionPlotBefore(data)
 
     # standardization
     data, meanList, rangeList = methods.standerdize(data)
 
-    #methods.distributionPlotAfter(data)
-
     X, Y = methods.splitData(data, output_count + 1)
 
+
     # split data
-    train_X, test_X, train_Y, test_Y = train_test_split(X, Y, test_size=0.3)
-    train_X, val_X, train_Y, val_Y = train_test_split(train_X, train_Y, test_size=0.5)
+    train_X, test_X, train_Y, test_Y = methods.randomSplit3rdD(X, Y, 0.7)
+    test_X, val_X, test_Y, val_Y = methods.randomSplit3rdD(test_X, test_Y, 0.5)
 
-    reshaped = lambda x: x.reshape(x.shape[0], x.shape[1], 1)
 
-    test_X = reshaped(test_X)
-    train_X = reshaped(train_X)
-    val_X = reshaped(val_X)
+    #reshaped = lambda x: x.reshape(x.shape[0], x.shape[1], 1)
+
+    #test_X = reshaped(test_X)
+    #train_X = reshaped(train_X)
+    #val_X = reshaped(val_X)
+
+    pass
 
     test_Y, test_inverse = methods.snipY(test_Y)
     train_Y, train_inverse = methods.snipY(train_Y)
@@ -50,11 +59,17 @@ def NeuralNet():
     model = models.Sequential()
 
     # input layer (pre-network convolution)
-    model.add(layers.Conv1D(32, kernel_size=8, strides=1, input_shape=(None, 1), activation='swish', padding="causal"))
-    model.add(layers.AveragePooling1D(2))
+    model.add(layers.Conv2D(32, kernel_size=8, strides=(2, 2),
+                            data_format="channels_first",
+                            # ((batch_size(2,2) channels (2), (col row))
+                            input_shape=(2, 2, 2),
+                            activation='swish', padding="same"))
 
+    model.add(layers.AveragePooling2D(data_format="channels_first", pool_size=(2,2)))
+
+    ##input needs to change
     # LSTM
-    model.add(layers.LSTM(48, activation='swish', input_shape=(None, 1), return_sequences=False))
+    #model.add(layers.LSTM(48, activation='swish', input_shape=(2, 2, None), return_sequences=False))
 
     # hidden layers
     model.add(layers.Dense(128, activation='swish'))

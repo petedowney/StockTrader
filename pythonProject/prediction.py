@@ -14,7 +14,6 @@ from pythonProject import methods
 def standerdizeData(data):
     meanList = []
     rangeList = []
-
     data2 = dict.copy(data)
 
     for key in data.keys():
@@ -45,12 +44,23 @@ def getPredictionData(data):
     # standardization
     sData, meanList, rangeList = standerdizeData(data)
 
-    sArrayData = np.array(())
+    sArrayData1 = np.array(())
+    sArrayData2 = np.array(())
 
+    n = 0
     for key in sData.keys():
-        sArrayData = np.append(sArrayData, sData[key])
+        if (n == 0):
+            sArrayData1 = np.array(sData[key][0])
+            sArrayData2 = np.array(sData[key][1])
+            n += 1
+        else:
+            sArrayData1 = np.row_stack((sArrayData1, sData[key][0]))
+            sArrayData2 = np.row_stack((sArrayData2, sData[key][1]))
 
-    sArrayData = sArrayData.reshape((len(sData.keys()), 1000, 1))
+
+    x=1
+
+    sArrayData = np.stack((sArrayData1, sArrayData2))
 
 
 
@@ -70,6 +80,8 @@ def predictGraph(data):
 
     prediction = getPredictionData(data)
 
+    prediction = methods.trunkate(prediction)
+
     fig = plt.figure()
     ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
     ax.set(title= "Distribution After Scaling", xlabel='Minutes', ylabel='Stock Scaled Value')
@@ -88,6 +100,8 @@ def predictGraph(data):
 
 def predict(data):
     prediction = getPredictionData(data)
+
+    prediction = methods.trunkate(prediction)
 
     sData, a, a2 = standerdizeData(data)
     del (a)

@@ -53,7 +53,7 @@ class Main:
         while True:
             x += 1
             logging.info("Retrieving Data ")
-            pastData.PastData(Main.api)
+            #pastData.PastData(Main.api)
 
             logging.info("Updating NN")
             neuralNet.NeuralNet()
@@ -74,6 +74,8 @@ class Main:
 if __name__ == "__main__":
     logging.info("Starting Threads")
 
+
+
     # creating the three theads
     threads = list()
 
@@ -89,8 +91,11 @@ if __name__ == "__main__":
     predict = threading.Thread(target=Main.Predict)
     threads.append(predict)
 
-    listenToData.start()
+    #listenToData.start()
     updateNN.start()
-    predict.start()
+    #predict.start()
+
 
     logging.info("Threads started")
+
+

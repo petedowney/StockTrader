@@ -45,27 +45,21 @@ def PastData(api, allSymbols=getSymbols(), dataLimit=1000):
         arr1 = np.row_stack(tuple(vectors))
         arr2 = np.row_stack(tuple(vectors2))
 
-        dataO = arr1 if (i == 0) else np.row_stack((data, arr1))
+        dataO = arr1 if (i == 0) else np.row_stack((dataO, arr1))
         dataV = arr2 if (i == 0) else np.row_stack((dataV, arr2))
 
         #finalData = np.stack((dataO, dataV))
         #print('progress:', str(i) + "/" + str(count - 1))
 
-
-    print(data)
     np.savetxt("data/techDataO.csv", dataO, delimiter=',', fmt='%f')
     np.savetxt("data/techDataV.csv", dataV, delimiter=',', fmt='%f')
 
 #gets past data from alpaca trade api but returns the data instead of saving to a file
 def PastData2(api, allSymbols=getSymbols(), dataLimit=1000):
 
-    print(allSymbols)
-
     data = None
 
     count = len(allSymbols) // 100 + 1
-
-    print(count)
 
     for i in range(count):
 

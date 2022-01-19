@@ -6,34 +6,30 @@ from sklearn.model_selection import train_test_split
 from scipy.signal import argrelextrema
 import matplotlib.pyplot as plt
 
-from pythonProject.getData import pastData, currentData
+from pythonProject.getData import past_data, current_data
 
 from pythonProject import methods
 
 
-#standerdizes data
-def standerdizeData(data):
-    #meanList = []
-    #rangeList = []
+# standerdizes data
+def standerdize_data(data):
+
     data2 = dict.copy(data)
 
     for key in data.keys():
-        #TODO generify
-        for inputType in range(0, 2):
+
+        for inputType in range(0, data[key].shape[0]):
             mean = data[key][inputType].mean()
             ranges = data[key][inputType].max() - data[key][inputType].min()
 
             data2[key][inputType] = (data[key][inputType] - mean) / ranges
 
-        #meanList.append(mean)
-        #rangeList.append(ranges)
-
-    return data2 #, meanList, rangeList
+    return data2
 
 # Updates the data for predictions
-def updateData(data):
+def update_data(data):
 
-    x = currentData.Data.getNewData()
+    x = current_data.Data.getNewData()
 
     for keys in x.keys():
         data[keys] = np.append(data.get(keys), x.get(keys))
@@ -42,33 +38,22 @@ def updateData(data):
     return data
 
 # With the updated data create new predictions
-def getPredictionData(data):
-
-    # standardization
-    sData = standerdizeData(data)
-
-    #TODO generify this
+def get_prediction_data(data):
 
     # converts data into an array
-    sArrayData1 = np.array(())
-    sArrayData2 = np.array(())
+    data = np.swapaxes(np.array(list(data.values())), 0, 1)
 
-    n = 0
-    for key in sData.keys():
-        if (n == 0):
-            sArrayData1 = np.array(sData[key][0])
-            sArrayData2 = np.array(sData[key][1])
-            n += 1
-        else:
-            sArrayData1 = np.row_stack((sArrayData1, sData[key][0]))
-            sArrayData2 = np.row_stack((sArrayData2, sData[key][1]))
+    #a1 = data[:,:,:949]
+    #a2 = data[:,:,-949:]
 
 
-    sArrayData = np.stack((sArrayData1, sArrayData2))
+    # I am so confused
+    # when doing data[:,:,:949] it predicts the next 50 really well
+    # however if its data[:,:,-949:] it makes no sense
 
     # reformating data from
     # (2, 3, 1000) -> (?, 1, 2, 949)
-    sArrayData = np.expand_dims(np.swapaxes(sArrayData[:,:,:949], 0, 1), axis=1)
+    sArrayData = np.expand_dims(np.swapaxes(data[:,:,-949:], 0, 1), axis=1)
 
     # code from:
     # https://machinelearningmastery.com/save-load-keras-deep-learning-models/
@@ -83,51 +68,42 @@ def getPredictionData(data):
 
     return prediction
 
-def predictGraph(data):
+def predict_graph(data):
 
-    prediction = getPredictionData(data)
-    
-    #prediction = methods.trunkate(prediction)
+    # data is in dict format
+    data = standerdize_data(data)
+
+    # prediction is in array format
+    prediction = get_prediction_data(data)
 
     fig = plt.figure()
     ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
     ax.set(title= "Distribution After Scaling", xlabel='Minutes', ylabel='Stock Scaled Value')
 
-    sData = standerdizeData(data)
-
     for n in prediction:
         ax.plot(range(15000, 15735, 15), n[:-1])
 
-    for key in sData.keys():
-        ax.plot(range(0, 15000, 15), sData[key][0])
+    for key in data.keys():
+        ax.plot(range(0, 15000, 15), data[key][0])
 
     plt.show()
 
 def predict(data):
-    prediction = getPredictionData(data)
 
-    #prediction = methods.trunkate(prediction)
+    # data is in dict format
+    data = standerdize_data(data)
 
-    sData, a, a2 = standerdizeData(data)
-    del (a)
-    del (a2)
-    newPrediction = {}
+    # prediction is in array format
+    prediction = get_prediction_data(data)
 
-    n = 0
+    # TODO work on this algorthim
     for key in data.keys():
-        newPrediction[key] = prediction[n]
-        n += 1;
-
-    prediction = dict.copy(newPrediction)
-    del(newPrediction)
-
-    for key in prediction.keys():
 
         minIndex = 0
         minValue = 100;
         maxIndex = 0
         maxValue = -100;
-        initialValue = sData.get(key)[-1:]
+        initialValue = data.get(key)[-1:]
 
         for x in range(0, len(prediction[key])):
             if prediction.get(key)[x] < minValue:

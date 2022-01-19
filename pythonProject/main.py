@@ -5,21 +5,22 @@ import time
 import multiprocessing
 import numpy as np
 
-import alpaca_trade_api as tradeapi
-from pythonProject import neuralNet, prediction, buyerAndSeller
-from pythonProject.getData import pastData, currentData, config
+import alpaca_trade_api as trade_api
+from pythonProject import neural_net, prediction, buyer_and_seller
+from pythonProject.getData import past_data, current_data, config
 
 
 class Main:
 
+    # connecting to the alpaca API and alpaca account
     api = None
     try:
-        api = tradeapi.REST(config.APIKEY, config.SECRETKEY,
-                            base_url='https://paper-api.alpaca.markets',
-                            api_version="v2")
+        api = trade_api.REST(config.APIKEY, config.SECRETKEY,
+                             base_url='https://paper-api.alpaca.markets',
+                             api_version="v2")
         api.list_positions()
 
-    except tradeapi.rest.APIError:
+    except trade_api.rest.APIError:
         print("Invalid Keys")
         exit(1)
 
@@ -29,36 +30,36 @@ class Main:
     format = "%(asctime)s: %(message)s"
     logging.basicConfig(format=format, level=logging.INFO, datefmt="%H:%M:%S")
 
-    listening = np.array(["GME", "AAPL", "TSLA"]) #pastData.getSymbols()
+    listening = np.array(["GME", "AAPL", "TSLA"])# pastData.getSymbols()
 
-    data = pastData.PastData2(api, listening)
+    # updated data from stocks that are being listened to
+    data = past_data.PastData2(api, listening)
 
     addingDataSemaphore = threading.Semaphore()
 
-
-    # updates stocks
-    @staticmethod
-    def BuyAndSell():
-        buyerAndSeller.BuyerAndSeller.updateStockPositions()
-
     # listens to the alpaca api data stream
     @staticmethod
-    def ListenToData():
-        currentData.Data.listen()
+    def listen_to_data():
+        current_data.Data.listen()
 
     # updates the NN on past data every 15 min or so
     @staticmethod
-    def UpdateNN():
+    def update_nn():
 
         x = 0
         while True:
             x += 1
+
+            # retrieves data
             logging.info("Retrieving Data ")
-            #pastData.PastData(Main.api)
+            # TODO make this more efficent by instead getting the data from the running data list
+            past_data.PastData(Main.api)
 
+            # updates NN
             logging.info("Updating NN")
-            neuralNet.NeuralNet()
+            neural_net.NeuralNet()
 
+            # sleeps for 10 minutes
             logging.info(str(x) + " Cycles Completed")
             time.sleep(10 * 60)
 
@@ -67,35 +68,35 @@ class Main:
     def Predict():
 
         while (True):
-            Main.data = prediction.updateData(Main.data)
-            prediction.predictGraph(Main.data)
-            #prediction.predict(Main.data)
+            Main.data = prediction.update_data(Main.data)
+            prediction.predict_graph(Main.data)
+
+            # sleeps for 1 minute
             time.sleep(60)
 
+
 if __name__ == "__main__":
+
     logging.info("Starting Threads")
-
-
 
     # creating the three theads
     threads = list()
 
     # listens to the alpaca api data stream
-    listenToData = threading.Thread(target=Main.ListenToData)
-    threads.append(listenToData)
+    listenToData = threading.Thread(target=Main.listen_to_data)
+    # threads.append(listenToData)
 
     # updates the NN on past data every 15 min or so
-    updateNN = threading.Thread(target=Main.UpdateNN)
-    threads.append(updateNN)
+    updateNN = threading.Thread(target=Main.update_nn)
+    # threads.append(updateNN)
 
     # takes streamed data and creates prediction data
     predict = threading.Thread(target=Main.Predict)
-    threads.append(predict)
+     #threads.append(predict)
 
-    #listenToData.start()
-    #updateNN.start()
+    listenToData.start()
+    updateNN.start()
     predict.start()
-
 
     logging.info("Threads started")
 

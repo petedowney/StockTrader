@@ -1,4 +1,3 @@
-
 import numpy as np
 import matplotlib.pyplot as plt
 import random
@@ -41,12 +40,13 @@ def plotLoss(history):
     ax.plot(history.history['loss'])
     ax.plot(history.history['val_loss'], color='red')
 
-def trunkate(data):
 
+def trunkate(data):
     for key in data.keys():
         data[key] = data[key][0]
 
     return data
+
 
 def standerdize(data):
     meanList = []
@@ -63,11 +63,10 @@ def standerdize(data):
             meanList.append(mean)
             rangeList.append(ranges)
 
-        #data2[j] = np.column_stack(
+        # data2[j] = np.column_stack(
         #    (data2[j], np.array(range(len(data2[j])))))  # indices are kept track of to match each row to its inverse
 
-
-    #TODO fix mean and range list
+    # TODO fix mean and range list
     return data2, meanList, rangeList
 
 
@@ -98,8 +97,6 @@ def splitData(data, y_count):
 
     x_till = shape[2] - y_count
 
-
-
     X = np.array(data[:, :, :x_till])
     Y = np.array(data[:, :, x_till:])
 
@@ -128,8 +125,10 @@ def snipY(y):
 
     return y[:, :, :-1], thisInv
 
+
 def randomSplit3rdD(x, y, splitpercent):
 
+    # TODO generify this
     x1 = None
     x2 = None
     y1 = None
@@ -165,34 +164,43 @@ def randomSplit3rdD(x, y, splitpercent):
 
     return x1, x2, y1, y2
 
+
 def fullStanderdize(data, outputCount):
     # standardization
-    data, meanList, rangeList = standerdize(data)
+    data, mean_list, range_list = standerdize(data)
 
     # splits data into x and y
-    X, Y = splitData(data, outputCount + 1)
+    x, y = splitData(data, outputCount + 1)
 
     # splits x and y into the various types
-    train_X, test_X, train_Y, test_Y = randomSplit3rdD(X, Y, 0.7)
-    test_X, val_X, test_Y, val_Y = randomSplit3rdD(test_X, test_Y, 0.5)
+    train_x, test_x, train_y, test_y = randomSplit3rdD(x, y, 0.7)
+    test_x, val_x, test_y, val_y = randomSplit3rdD(test_x, test_y, 0.5)
 
     # honestly 0 clue
-    test_Y, test_inverse = snipY(test_Y)
-    train_Y, train_inverse = snipY(train_Y)
-    val_Y, val_inverse = snipY(val_Y)
+    test_y, test_inverse = snipY(test_y)
+    train_y, train_inverse = snipY(train_y)
+    val_y, val_inverse = snipY(val_y)
 
-    # reformats the data to work with the NN
+    # i am using lambdas solely because it makes toby happy
+
+    # reformat the data to work with the NN
     # swaps axis 1 and 0 then adds an axis onto axis 1 creating a 4d array
-    swapAndExpand = lambda x: np.expand_dims(np.swapaxes(x, 0, 1), axis=1)
+    swap_and_expand = lambda data_input: np.expand_dims(np.swapaxes(data_input, 0, 1), axis=1)
 
-    test_X = swapAndExpand(test_X)
-    test_Y = swapAndExpand(test_Y)
-    train_X = swapAndExpand(train_X)
-    train_Y = swapAndExpand(train_Y)
-    val_X = swapAndExpand(val_X)
-    val_Y = swapAndExpand(val_Y)
+    test_x = swap_and_expand(test_x)
+    test_y = swap_and_expand(test_y)
+    train_x = swap_and_expand(train_x)
+    train_y = swap_and_expand(train_y)
+    val_x = swap_and_expand(val_x)
+    val_y = swap_and_expand(val_y)
 
-    return test_X, test_Y, train_X, train_Y, val_X, val_Y
+    # converts the nn input format to its output format
+    # gets rid of the volume data for y cause predictions only need to be x
+    to_output_format = lambda data_input: np.swapaxes(np.squeeze(data_input[:, :, [0], :], axis=1), 1, 2)
 
-def lossY(stdY):
-    return np.swapaxes(np.squeeze(stdY[:,:,[0],:], axis=1), 1, 2)
+    test_y = to_output_format(test_y)
+    val_y = to_output_format(val_y)
+    train_y = to_output_format(train_y)
+
+    return test_x, test_y, train_x, train_y, val_x, val_y
+

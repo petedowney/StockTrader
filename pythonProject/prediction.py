@@ -11,21 +11,24 @@ from pythonProject.getData import pastData, currentData
 from pythonProject import methods
 
 
+#standerdizes data
 def standerdizeData(data):
-    meanList = []
-    rangeList = []
+    #meanList = []
+    #rangeList = []
     data2 = dict.copy(data)
 
     for key in data.keys():
-        mean = data[key].mean()
-        ranges = data[key].max() - data[key].min()
+        #TODO generify
+        for inputType in range(0, 2):
+            mean = data[key][inputType].mean()
+            ranges = data[key][inputType].max() - data[key][inputType].min()
 
-        data2[key] = (data[key] - mean) / ranges
+            data2[key][inputType] = (data[key][inputType] - mean) / ranges
 
-        meanList.append(mean)
-        rangeList.append(ranges)
+        #meanList.append(mean)
+        #rangeList.append(ranges)
 
-    return data2, meanList, rangeList
+    return data2 #, meanList, rangeList
 
 # Updates the data for predictions
 def updateData(data):
@@ -42,8 +45,11 @@ def updateData(data):
 def getPredictionData(data):
 
     # standardization
-    sData, meanList, rangeList = standerdizeData(data)
+    sData = standerdizeData(data)
 
+    #TODO generify this
+
+    # converts data into an array
     sArrayData1 = np.array(())
     sArrayData2 = np.array(())
 
@@ -58,11 +64,11 @@ def getPredictionData(data):
             sArrayData2 = np.row_stack((sArrayData2, sData[key][1]))
 
 
-    x=1
-
     sArrayData = np.stack((sArrayData1, sArrayData2))
 
-
+    # reformating data from
+    # (2, 3, 1000) -> (?, 1, 2, 949)
+    sArrayData = np.expand_dims(np.swapaxes(sArrayData[:,:,:949], 0, 1), axis=1)
 
     # code from:
     # https://machinelearningmastery.com/save-load-keras-deep-learning-models/
@@ -72,36 +78,35 @@ def getPredictionData(data):
     model = model_from_json(loaded_model_json)
     model.load_weights("data/model.h5")
 
-    prediction = model.predict(sArrayData)
+    # returns prediction and converts to a 2d array of (company, time index)
+    prediction = np.squeeze(model.predict(sArrayData))
 
     return prediction
 
 def predictGraph(data):
 
     prediction = getPredictionData(data)
-
-    prediction = methods.trunkate(prediction)
+    
+    #prediction = methods.trunkate(prediction)
 
     fig = plt.figure()
     ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
     ax.set(title= "Distribution After Scaling", xlabel='Minutes', ylabel='Stock Scaled Value')
 
-    sData, a, s2 = standerdizeData(data)
-    del(a)
-    del(s2)
+    sData = standerdizeData(data)
 
     for n in prediction:
         ax.plot(range(15000, 15735, 15), n[:-1])
 
     for key in sData.keys():
-        ax.plot(range(0, 15000, 15), sData[key])
+        ax.plot(range(0, 15000, 15), sData[key][0])
 
     plt.show()
 
 def predict(data):
     prediction = getPredictionData(data)
 
-    prediction = methods.trunkate(prediction)
+    #prediction = methods.trunkate(prediction)
 
     sData, a, a2 = standerdizeData(data)
     del (a)

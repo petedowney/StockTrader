@@ -14,7 +14,7 @@ def getSymbols():
     #the source directory used is the one used from the program that runs it
     fileName = 'data/tech.csv'
     raw_data = open(fileName, 'rt')
-    data = np.loadtxt(raw_data, usecols = (0), skiprows = 1, delimiter = ',', dtype = np.str)
+    data = np.loadtxt(raw_data, usecols=0, skiprows=1, delimiter=',', dtype=np.str)
     
     return data
 
@@ -92,7 +92,7 @@ def PastData2(api, allSymbols=getSymbols(), dataLimit=1000):
 
     dataDictionary = {}
 
-    for x in range(0, len(data)+1):
+    for x in range(0, data.shape[1]):
         dataDictionary["AM." + allSymbols[x]] = data[:,x,:]
 
     return dataDictionary;

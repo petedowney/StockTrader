@@ -1,4 +1,5 @@
 import logging
+import os
 import threading
 import time
 import multiprocessing
@@ -22,13 +23,13 @@ class Main:
         print("Invalid Keys")
         exit(1)
 
-    assert api is not None
+    assert api is not None, "API is null"
 
     # logging
     format = "%(asctime)s: %(message)s"
     logging.basicConfig(format=format, level=logging.INFO, datefmt="%H:%M:%S")
 
-    listening = pastData.getSymbols()
+    listening = np.array(["GME", "AAPL", "TSLA"]) #pastData.getSymbols()
 
     data = pastData.PastData2(api, listening)
 
@@ -68,7 +69,7 @@ class Main:
         while (True):
             Main.data = prediction.updateData(Main.data)
             prediction.predictGraph(Main.data)
-            prediction.predict(Main.data)
+            #prediction.predict(Main.data)
             time.sleep(60)
 
 if __name__ == "__main__":
@@ -92,8 +93,8 @@ if __name__ == "__main__":
     threads.append(predict)
 
     #listenToData.start()
-    updateNN.start()
-    #predict.start()
+    #updateNN.start()
+    predict.start()
 
 
     logging.info("Threads started")

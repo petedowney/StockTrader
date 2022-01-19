@@ -28,62 +28,55 @@ def NeuralNet():
     raw_data = open(file_name, 'rt')
     dataV = np.loadtxt(raw_data, delimiter=',', dtype=np.float)
 
+
+    # stacks the data into a single 3d array
     data = np.stack((dataO, dataV))
 
-    output_count = 50
+    outputCount = 50
 
-    # standardization
-    data, meanList, rangeList = methods.standerdize(data)
+    # splits up the data into the various types and seperates x and y and standerdizes
+    test_X, test_Y, train_X, train_Y, val_X, val_Y = methods.fullStanderdize(data, outputCount)
 
-    X, Y = methods.splitData(data, output_count + 1)
+    # gets rid of the volume data for y cause predictions only need to be x
 
+    print(test_Y.shape)
+    test_Y = methods.lossY(test_Y)
+    print(test_Y.shape)
+    val_Y = methods.lossY(val_Y)
+    train_Y = methods.lossY(train_Y)
 
-    # split data
-    train_X, test_X, train_Y, test_Y = methods.randomSplit3rdD(X, Y, 0.7)
-    test_X, val_X, test_Y, val_Y = methods.randomSplit3rdD(test_X, test_Y, 0.5)
-
-
-    #reshaped = lambda x: x.reshape(x.shape[0], x.shape[1], 1)
-
-    #test_X = reshaped(test_X)
-    #train_X = reshaped(train_X)
-    #val_X = reshaped(val_X)
-
-    pass
-
-    test_Y, test_inverse = methods.snipY(test_Y)
-    train_Y, train_inverse = methods.snipY(train_Y)
-    val_Y, val_inverse = methods.snipY(val_Y)
 
     # MODEL ========
     model = models.Sequential()
 
     # input layer (pre-network convolution)
-    model.add(layers.Conv2D(32, kernel_size=8, strides=(2, 2),
-                            data_format="channels_first",
-                            # ((batch_size(2,2) channels (2), (col row))
-                            input_shape=(2, 2, 2),
-                            activation='swish', padding="same"))
+    #model.add(layers.Conv2D(32, kernel_size=(1, 1),
+    #                        # ((batch_size(None) channels (2)
+    #                        # channels equates to the amount of data types each company has
+    #                        input_shape=(None, None, 2),
+    #                        activation='swish', padding="same"))
 
-    model.add(layers.AveragePooling2D(data_format="channels_first", pool_size=(2,2)))
+    model.add(layers.ConvLSTM1D(50, kernel_size=4,
+                                input_shape=(1, 2, (1000-outputCount-1)),
+                                activation='swish', return_sequences=False,
+                                data_format='channels_first', padding="same"))
 
-    ##input needs to change
-    # LSTM
-    #model.add(layers.LSTM(48, activation='swish', input_shape=(2, 2, None), return_sequences=False))
+    #model.add(layers.AveragePooling2D(pool_size=(2,2)))
 
     # hidden layers
     model.add(layers.Dense(128, activation='swish'))
     model.add(layers.Dense(64, activation='linear'))
 
     # output layer
-    model.add(layers.Dense(output_count, activation='linear'))
+    model.add(layers.Dense(1, activation='linear'))
 
-    #model.summary()
+    model.summary()
 
     model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
 
-    history = model.fit(train_X, train_Y, epochs=30, batch_size=64, validation_data=(val_X, val_Y), verbose=0)
+    history = model.fit(train_X, train_Y, epochs=30, batch_size=64, validation_data=(val_X, val_Y), verbose=1)
 
+    methods.plotLoss(history)
     # code from:
     # https://machinelearningmastery.com/save-load-keras-deep-learning-models/
     model_json = model.to_json()

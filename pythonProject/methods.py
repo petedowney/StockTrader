@@ -164,3 +164,35 @@ def randomSplit3rdD(x, y, splitpercent):
             n2 += 1
 
     return x1, x2, y1, y2
+
+def fullStanderdize(data, outputCount):
+    # standardization
+    data, meanList, rangeList = standerdize(data)
+
+    # splits data into x and y
+    X, Y = splitData(data, outputCount + 1)
+
+    # splits x and y into the various types
+    train_X, test_X, train_Y, test_Y = randomSplit3rdD(X, Y, 0.7)
+    test_X, val_X, test_Y, val_Y = randomSplit3rdD(test_X, test_Y, 0.5)
+
+    # honestly 0 clue
+    test_Y, test_inverse = snipY(test_Y)
+    train_Y, train_inverse = snipY(train_Y)
+    val_Y, val_inverse = snipY(val_Y)
+
+    # reformats the data to work with the NN
+    # swaps axis 1 and 0 then adds an axis onto axis 1 creating a 4d array
+    swapAndExpand = lambda x: np.expand_dims(np.swapaxes(x, 0, 1), axis=1)
+
+    test_X = swapAndExpand(test_X)
+    test_Y = swapAndExpand(test_Y)
+    train_X = swapAndExpand(train_X)
+    train_Y = swapAndExpand(train_Y)
+    val_X = swapAndExpand(val_X)
+    val_Y = swapAndExpand(val_Y)
+
+    return test_X, test_Y, train_X, train_Y, val_X, val_Y
+
+def lossY(stdY):
+    return np.swapaxes(np.squeeze(stdY[:,:,[0],:], axis=1), 1, 2)

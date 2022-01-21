@@ -30,7 +30,7 @@ class Main:
     format = "%(asctime)s: %(message)s"
     logging.basicConfig(format=format, level=logging.INFO, datefmt="%H:%M:%S")
 
-    listening = np.array(["GME", "AAPL", "TSLA"])# pastData.getSymbols()
+    listening = past_data.getSymbols()
 
     # updated data from stocks that are being listened to
     data = past_data.PastData2(api, listening)
@@ -65,7 +65,7 @@ class Main:
 
     # takes streamed data and creates prediction data
     @staticmethod
-    def Predict():
+    def predict():
 
         while (True):
             Main.data = prediction.update_data(Main.data)
@@ -91,11 +91,11 @@ if __name__ == "__main__":
     # threads.append(updateNN)
 
     # takes streamed data and creates prediction data
-    predict = threading.Thread(target=Main.Predict)
+    predict = threading.Thread(target=Main.predict)
      #threads.append(predict)
 
     listenToData.start()
-    updateNN.start()
+    #updateNN.start()
     predict.start()
 
     logging.info("Threads started")

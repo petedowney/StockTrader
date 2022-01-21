@@ -39,9 +39,16 @@ class Data:
 
             if message["stream"] in Data.outPutMessage.keys():
                 Data.outPutMessage[message["stream"]] = np.append(Data.outPutMessage[message["stream"]],
-                                                                  message.get("data").get("o"))
+                                                                  [message.get("data").get("o"),
+                                                                   message.get("data").get("v"),
+                                                                   message.get("data").get("h") -
+                                                                   message.get("data").get("l")], axis=1)
             else:
-                Data.outPutMessage[message["stream"]] = [message.get("data").get("o")]
+                Data.outPutMessage[message["stream"]] = \
+                    [message.get("data").get("o"),
+                     message.get("data").get("v"),
+                     message.get("data").get("h") -
+                     message.get("data").get("l")]
 
             main.Main.addingDataSemaphore.release()
         else:

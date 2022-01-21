@@ -28,8 +28,13 @@ def NeuralNet():
     raw_data = open(file_name, 'rt')
     data_v = np.loadtxt(raw_data, delimiter=',', dtype=np.float)
 
+    file_name = 'data/techDataR.csv'
+    raw_data = open(file_name, 'rt')
+    data_r = np.loadtxt(raw_data, delimiter=',', dtype=np.float)
+
+
     # stacks the data into a single 3d array
-    data = np.stack((data_o, data_v))
+    data = np.stack((data_o, data_v, data_r))
 
     output_count = 50
 
@@ -43,15 +48,15 @@ def NeuralNet():
     model = models.Sequential()
 
     model.add(layers.ConvLSTM1D(50, kernel_size=4,
-                                input_shape=(1, 2, (1000-output_count-1)),
+                                input_shape=(1, 3, (1000-output_count)),
                                 activation='swish', return_sequences=False,
                                 data_format='channels_first', padding="same"))
 
-    # model.add(layers.AveragePooling2D(pool_size=(2,2)))
+    model.add(layers.AveragePooling1D(pool_size=4, data_format='channels_first'))
 
     # hidden layers
     model.add(layers.Dense(128, activation='swish'))
-    model.add(layers.Dense(64, activation='linear'))
+    model.add(layers.Dense(64, activation='swish'))
 
     # output layer
     model.add(layers.Dense(1, activation='linear'))

@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from scipy.signal import argrelextrema
 import matplotlib.pyplot as plt
-
+import copy
 from pythonProject.getData import past_data, current_data
 
 from pythonProject import methods
@@ -14,7 +14,7 @@ from pythonProject import methods
 # standerdizes data
 def standerdize_data(data):
 
-    data2 = dict.copy(data)
+    data2 = copy.deepcopy(data)
 
     for key in data.keys():
 
@@ -32,16 +32,16 @@ def update_data(data):
     x = current_data.Data.getNewData()
 
     for keys in x.keys():
-        data[keys] = np.append(data.get(keys), x.get(keys))
-        data[keys] = data[keys][-1000:]
+        data[keys] = np.append(data.get(keys), np.array(x.get(keys)).reshape((3,1)), axis=1)
+        data[keys] = data[keys][:, -1000:]
+
 
     return data
 
 # With the updated data create new predictions
-def get_prediction_data(data):
+def get_prediction_data(p_data):
 
-    # converts data into an array
-    data = np.swapaxes(np.array(list(data.values())), 0, 1)
+    data = np.swapaxes(np.array(list(p_data.values())), 0, 1)
 
     #a1 = data[:,:,:949]
     #a2 = data[:,:,-949:]
@@ -52,8 +52,11 @@ def get_prediction_data(data):
     # however if its data[:,:,-949:] it makes no sense
 
     # reformating data from
-    # (2, 3, 1000) -> (?, 1, 2, 949)
-    sArrayData = np.expand_dims(np.swapaxes(data[:,:,-949:], 0, 1), axis=1)
+    # (channels, company, 1000) -> (company, 1, channels, 950)
+
+
+    data = np.expand_dims(np.swapaxes(data[:,:,-950:], 0, 1), axis=1)
+
 
     # code from:
     # https://machinelearningmastery.com/save-load-keras-deep-learning-models/
@@ -64,34 +67,34 @@ def get_prediction_data(data):
     model.load_weights("data/model.h5")
 
     # returns prediction and converts to a 2d array of (company, time index)
-    prediction = np.squeeze(model.predict(sArrayData))
+    prediction = np.squeeze(model.predict(data))
 
     return prediction
 
-def predict_graph(data):
+def predict_graph(data1):
 
     # data is in dict format
-    data = standerdize_data(data)
+    data = standerdize_data(data1)
 
     # prediction is in array format
-    prediction = get_prediction_data(data)
+    prediction= get_prediction_data(data)
 
     fig = plt.figure()
     ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
     ax.set(title= "Distribution After Scaling", xlabel='Minutes', ylabel='Stock Scaled Value')
 
     for n in prediction:
-        ax.plot(range(15000, 15735, 15), n[:-1])
+        ax.plot(range(15000, 15750, 15), n)
 
     for key in data.keys():
         ax.plot(range(0, 15000, 15), data[key][0])
 
     plt.show()
 
-def predict(data):
+def predict(data1):
 
     # data is in dict format
-    data = standerdize_data(data)
+    data = standerdize_data(data1)
 
     # prediction is in array format
     prediction = get_prediction_data(data)

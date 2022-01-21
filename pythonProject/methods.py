@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import random
+import copy
 
 
 #
@@ -48,26 +49,22 @@ def trunkate(data):
     return data
 
 
-def standerdize(data):
-    meanList = []
-    rangeList = []
+def standerdize(x, y):
 
-    data2 = np.copy(data)
+    x_new = copy.deepcopy(x)
+    y_new = copy.deepcopy(y)
 
-    for j, subD in enumerate(data):
+    for j, subD in enumerate(x_new):
         for i, n in enumerate(subD):
             mean = n.mean()
             ranges = n.max() - n.min()
-            data2[j, i] = ((n - mean) / ranges)
-
-            meanList.append(mean)
-            rangeList.append(ranges)
-
+            x_new[j, i] = ((n - mean) / ranges)
+            y_new[j, i] = ((y_new[j, i] - mean) / ranges)
         # data2[j] = np.column_stack(
         #    (data2[j], np.array(range(len(data2[j])))))  # indices are kept track of to match each row to its inverse
 
     # TODO fix mean and range list
-    return data2, meanList, rangeList
+    return x_new, y_new
 
 
 def distributionPlotBefore(data):
@@ -95,10 +92,8 @@ def distributionPlotAfter(data):
 def splitData(data, y_count):
     shape = data.shape
 
-    x_till = shape[2] - y_count
-
-    X = np.array(data[:, :, :x_till])
-    Y = np.array(data[:, :, x_till:])
+    X = np.array(data[:, :, :-y_count + 1])
+    Y = np.array(data[:, :, -y_count + 1:])
 
     return (X, Y)
 
@@ -128,16 +123,15 @@ def snipY(y):
 
 def randomSplit3rdD(x, y, splitpercent):
 
-    # TODO generify this
+    # TODO make this better
     x1 = None
     x2 = None
     y1 = None
     y2 = None
 
-    len = x.shape[1]
     n1 = 0
     n2 = 0
-    for n in range(0, len):
+    for n in range(0, x.shape[1]):
 
         if random.random() < splitpercent:
             if n1 == 0:
@@ -166,20 +160,22 @@ def randomSplit3rdD(x, y, splitpercent):
 
 
 def fullStanderdize(data, outputCount):
-    # standardization
-    data, mean_list, range_list = standerdize(data)
 
     # splits data into x and y
     x, y = splitData(data, outputCount + 1)
+
+
+    # standardization
+    x, y = standerdize(x, y)
 
     # splits x and y into the various types
     train_x, test_x, train_y, test_y = randomSplit3rdD(x, y, 0.7)
     test_x, val_x, test_y, val_y = randomSplit3rdD(test_x, test_y, 0.5)
 
     # honestly 0 clue
-    test_y, test_inverse = snipY(test_y)
-    train_y, train_inverse = snipY(train_y)
-    val_y, val_inverse = snipY(val_y)
+    # test_y, test_inverse = snipY(test_y)
+    # train_y, train_inverse = snipY(train_y)
+    # val_y, val_inverse = snipY(val_y)
 
     # i am using lambdas solely because it makes toby happy
 

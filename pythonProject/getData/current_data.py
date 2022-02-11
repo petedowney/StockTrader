@@ -8,17 +8,17 @@ import numpy as np
 class Data:
 
     # Determines which companies the program will listen to
-    outPutMessage = {}
+    out_put_message = {}
 
     # When the listening thread is opened will validate the connection
     # and begin listening to the listenCompanies
     @staticmethod
-    def onOpen(ws):
+    def on_open(ws):
 
         print("open")
         auth_data = {
             "action": "authenticate",
-            "data": {"key_id": config.APIKEY, "secret_key": config.SECRETKEY}
+            "data": {"key_id": config.API_KEY, "secret_key": config.SECRET_KEY}
         }
 
         ws.send(json.dumps(auth_data))
@@ -30,33 +30,33 @@ class Data:
     # On a message will update the outPutMessage with the new data
     # If it is an authentication message it will just print it out
     @staticmethod
-    def onMessage(ws, message):
+    def on_message(ws, message):
         message = json.loads(message)
 
         if "o" in message.get("data"):
 
-            main.Main.addingDataSemaphore.acquire()
+            main.Main.adding_data_semaphore.acquire()
 
-            if message["stream"] in Data.outPutMessage.keys():
-                Data.outPutMessage[message["stream"]] = np.append(Data.outPutMessage[message["stream"]],
-                                                                  [message.get("data").get("o"),
+            if message["stream"] in Data.out_put_message.keys():
+                Data.out_put_message[message["stream"]] = np.append(Data.out_put_message[message["stream"]],
+                                                                    [message.get("data").get("o"),
                                                                    message.get("data").get("v"),
                                                                    message.get("data").get("h") -
                                                                    message.get("data").get("l")], axis=1)
             else:
-                Data.outPutMessage[message["stream"]] = \
+                Data.out_put_message[message["stream"]] = \
                     [message.get("data").get("o"),
                      message.get("data").get("v"),
                      message.get("data").get("h") -
                      message.get("data").get("l")]
 
-            main.Main.addingDataSemaphore.release()
+            main.Main.adding_data_semaphore.release()
         else:
             print(message)
 
     # just logs that the connection has been closed
     @staticmethod
-    def onClose(ws):
+    def on_close(ws):
         print("closed connection")
 
     # will listen to companies for new data based on the standerdListen
@@ -64,19 +64,19 @@ class Data:
     def listen():
 
         socket = "wss://data.alpaca.markets/stream"
-        ws = websocket.WebSocketApp(socket, on_open=Data.onOpen, on_message=Data.onMessage, on_close=Data.onClose)
+        ws = websocket.WebSocketApp(socket, on_open=Data.on_open, on_message=Data.on_message, on_close=Data.on_close)
         ws.run_forever()
 
     # empties the outPutMessage and adds it to the main data
     @staticmethod
-    def getNewData():
+    def get_new_data():
 
-        main.Main.addingDataSemaphore.acquire()
+        main.Main.adding_data_semaphore.acquire()
 
-        temp = dict.copy(Data.outPutMessage)
-        Data.outPutMessage.clear()
+        temp = dict.copy(Data.out_put_message)
+        Data.out_put_message.clear()
 
-        main.Main.addingDataSemaphore.release()
+        main.Main.adding_data_semaphore.release()
         return temp;
 
 

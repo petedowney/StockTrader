@@ -16,47 +16,39 @@ def standerdize_data(data):
 
     data2 = copy.deepcopy(data)
 
-    for key in data.keys():
+    for company in range(0, data.shape[0]):
+        for inputType in range(0, data.shape[1]):
+            mean = data[company, inputType].mean()
+            ranges = data[company, inputType].max() - data[company, inputType].min()
 
-        for inputType in range(0, data[key].shape[0]):
-            mean = data[key][inputType].mean()
-            ranges = data[key][inputType].max() - data[key][inputType].min()
-
-            data2[key][inputType] = (data[key][inputType] - mean) / ranges
+            data2[company, inputType] = (data[company, inputType] - mean) / ranges
 
     return data2
 
 # Updates the data for predictions
-def update_data(data):
+def update_data(data, listening):
 
-    x = current_data.Data.getNewData()
+    x = current_data.Data.get_new_data()
 
-    for keys in x.keys():
-        data[keys] = np.append(data.get(keys), np.array(x.get(keys)).reshape((3,1)), axis=1)
-        data[keys] = data[keys][:, -1000:]
+    for key in x.keys():
+        n = np.where(listening, key)
 
+        data[n]
+
+        data[n] = np.append(data[n], np.array(x[key]).reshape((3,1)), axis=1)
+        data[n] = data[n, :, -1000:]
 
     return data
 
 # With the updated data create new predictions
 def get_prediction_data(p_data):
-
-    data = np.swapaxes(np.array(list(p_data.values())), 0, 1)
-
     #a1 = data[:,:,:949]
     #a2 = data[:,:,-949:]
-
-
-    # I am so confused
-    # when doing data[:,:,:949] it predicts the next 50 really well
-    # however if its data[:,:,-949:] it makes no sense
 
     # reformating data from
     # (channels, company, 1000) -> (company, 1, channels, 950)
 
-
-    data = np.expand_dims(np.swapaxes(data[:,:,-950:], 0, 1), axis=1)
-
+    data = np.expand_dims(np.swapaxes(p_data[:, :, -950:], 0, 1), axis=1)
 
     # code from:
     # https://machinelearningmastery.com/save-load-keras-deep-learning-models/
@@ -73,21 +65,33 @@ def get_prediction_data(p_data):
 
 def predict_graph(data1):
 
-    # data is in dict format
+    #standerdizes data and finds average
     data = standerdize_data(data1)
+    average = np.expand_dims(np.average(data, axis=1), 1)
 
     # prediction is in array format
-    prediction= get_prediction_data(data)
+    prediction = get_prediction_data(data)
+    avg_prediction = get_prediction_data(average)
+    #n = 0
+    #for key in data.keys():
+    #    data[key] = np.append(np.squeeze(data[key][0, :, -950:]), prediction[n])
+    #    n+=1
+
+    #prediction2 = get_prediction_data(np.append(np.squeeze(data[0, -900:]), prediction))
 
     fig = plt.figure()
     ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
     ax.set(title= "Distribution After Scaling", xlabel='Minutes', ylabel='Stock Scaled Value')
 
-    for n in prediction:
-        ax.plot(range(15000, 15750, 15), n)
+    for company_index, company in enumerate(prediction):
+        ax.plot(range(15000, 15750, 15), company, '--')
+        ax.plot(range(0, 15000, 15), data[0, company_index])
 
-    for key in data.keys():
-        ax.plot(range(0, 15000, 15), data[key][0])
+    ax.plot(range(15000, 15750, 15), avg_prediction, '.-')
+    ax.plot(range(0, 15000, 15), average[0, 0], '.-')
+
+    #for n in prediction2:
+    #    ax.plot(range(15750, 16500, 15), n)
 
     plt.show()
 

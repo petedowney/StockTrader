@@ -9,11 +9,8 @@ import alpaca_trade_api as trade_api
 from pythonProject import neural_net, prediction
 from pythonProject.getData import past_data, current_data, config
 
-# TODO blackman showles model for price prediction
-
 
 class Main:
-
     # connecting to the alpaca API and alpaca account
     api = None
     try:
@@ -32,74 +29,75 @@ class Main:
     format = "%(asctime)s: %(message)s"
     logging.basicConfig(format=format, level=logging.INFO, datefmt="%H:%M:%S")
 
-    listening = np.array(["AAPL", "TSLA"])#past_data.get_symbols()
+    listening = np.array(["AAPL",
+"AAON",
+"AAWW",
+"ABMD", "ABNB", "ACAD", "GME", "CACI", "CCMP"
+])#past_data.get_symbols()
 
     # updated data from stocks that are being listened to
     data = past_data.get_past_data(api, listening)
 
     adding_data_semaphore = threading.Semaphore()
 
-    # listens to the alpaca api data stream
-    @staticmethod
-    def listen_to_data():
-        current_data.Data.listen()
 
-    # updates the NN on past data every 15 min or so
-    @staticmethod
-    def update_nn():
+# listens to the alpaca api data stream
+def listen_to_data():
+    current_data.listen()
 
-        x = 0
-        while True:
-            x += 1
 
-            # retrieves data
-            logging.info("Retrieving Data ")
-            # TODO make this more efficent by instead getting the data from the running data list
-            past_data.get_past_data_to_csv(Main.api)
+# updates the NN on past data every 15 min or so
+def update_nn():
+    x = 0
+    while True:
+        x += 1
 
-            # updates NN
-            logging.info("Updating NN")
-            neural_net.train_neural_net()
+        # retrieves data
+        logging.info("Retrieving Data ")
+        # TODO make this more efficent by instead getting the data from the running data list
+        past_data.get_past_data_to_csv(Main.api)
 
-            # sleeps for 10 minutes
-            logging.info(str(x) + " Cycles Completed")
-            time.sleep(10 * 60)
+        # updates NN
+        logging.info("Updating NN")
+        neural_net.train_neural_net()
 
-    # takes streamed data and creates prediction data
-    @staticmethod
-    def predict():
+        # sleeps for 10 minutes
+        logging.info(str(x) + " Cycles Completed")
+        time.sleep(10 * 60)
 
-        while True:
-            Main.data = prediction.update_data(Main.data, Main.listening)
-            prediction.predict_graph(Main.data)
 
-            # sleeps for 1 minute
-            time.sleep(60)
+# takes streamed data and creates prediction data
+def predict():
+
+    prediction.create_stocks(Main.listening)
+    while True:
+        Main.data = prediction.update_data(Main.data, Main.listening)
+        prediction.buy_and_sell(Main.data)
+
+        # sleeps for 1 minute
+        time.sleep(60)
 
 
 if __name__ == "__main__":
-
     logging.info("Starting Threads")
 
     # creating the three theads
     threads = list()
 
     # listens to the alpaca api data stream
-    listen_to_data = threading.Thread(target=Main.listen_to_data)
+    listen_to_data = threading.Thread(target=listen_to_data)
     # threads.append(listenToData)
 
     # updates the NN on past data every 15 min or so
-    update_nn = threading.Thread(target=Main.update_nn)
+    update_nn = threading.Thread(target=update_nn)
     # threads.append(updateNN)
 
     # takes streamed data and creates prediction data
-    predict = threading.Thread(target=Main.predict)
-     #threads.append(predict)
+    predict = threading.Thread(target=predict)
+    # threads.append(predict)
 
     #listen_to_data.start()
-    #update_nn.start()
-    predict.start()
+    update_nn.start()
+    #predict.start()
 
     logging.info("Threads started")
-
-

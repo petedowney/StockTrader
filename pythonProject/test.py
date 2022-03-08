@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 
 from pythonProject import methods
-from pythonProject.getData import pastData, config
+from pythonProject.getData import past_data, config
 import alpaca_trade_api as tradeapi
 
 
@@ -29,9 +29,13 @@ except tradeapi.rest.APIError:
 assert api is not None
 
 
-data = pastData.get_past_data(api, np.array(["GME", "AAPL", "TSLA"]), 10)
+#data = past_data.get_past_data(api, np.array(["GME", "AAPL", "TSLA"]), 10)
 
-print(data)
+#api.submit_order("GME", 1)
+
+api.submit_order("GME", 1, side="sell")
+#print(data)
 
 x = 1
 #print(data)
+print("ad;f;adfsfvzdf;asdf;adf")

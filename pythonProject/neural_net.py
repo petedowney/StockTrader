@@ -1,4 +1,3 @@
-
 """
 Created on Mon Feb 22 15:04:12 2021
 
@@ -12,6 +11,7 @@ from keras import models
 from keras import layers
 from pythonProject import methods
 
+
 def split_data(data, y_count):
     shape = data.shape
 
@@ -20,8 +20,8 @@ def split_data(data, y_count):
 
     return (X, Y)
 
-def standerdize(x, y):
 
+def standerdize(x, y):
     x_new = copy.deepcopy(x)
     y_new = copy.deepcopy(y)
 
@@ -41,7 +41,6 @@ def standerdize(x, y):
 # randomly splits x and y from the third dimension
 # EX (10, 20, 30) -> (10, 20, 11) (10, 20, 19)
 def random_split_3rdD(x, y, splitpercent):
-
     # TODO make this better
     x1 = None
     x2 = None
@@ -77,11 +76,10 @@ def random_split_3rdD(x, y, splitpercent):
 
     return x1, x2, y1, y2
 
-def full_standerdize(data, outputCount):
 
+def full_standerdize(data, outputCount):
     # splits data into x and y
     x, y = split_data(data, outputCount + 1)
-
 
     # standardization
     x, y = standerdize(x, y)
@@ -113,6 +111,7 @@ def full_standerdize(data, outputCount):
 
     return test_x, test_y, train_x, train_y, val_x, val_y
 
+
 # ASKTOBY
 def train_neural_net():
     # DATA ===========
@@ -132,7 +131,6 @@ def train_neural_net():
     raw_data = open(file_name, 'rt')
     data_ema = np.loadtxt(raw_data, delimiter=',', dtype=np.float)
 
-
     # stacks the data into a single 3d array
     data = np.stack((data_o, data_v, data_r, data_ema))
 
@@ -148,7 +146,7 @@ def train_neural_net():
     model = models.Sequential()
 
     model.add(layers.ConvLSTM1D(50, kernel_size=20, strides=2,
-                                input_shape=(1, 4, (1000-output_count)),
+                                input_shape=(1, 4, (1000 - output_count)),
                                 activation='swish', return_sequences=False,
                                 data_format='channels_first', padding="same"))
 

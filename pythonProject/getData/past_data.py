@@ -20,6 +20,7 @@ def get_symbols():
     
     return data
 
+# calculates the exponential moving average
 def calculate_ema(data, smoothing):
 
     ema = np.zeros((data.shape))
@@ -28,11 +29,10 @@ def calculate_ema(data, smoothing):
         ema[company, 0] = data[company, 0] * (smoothing / 1)
         for time_stamp in range(1, data.shape[1]):
             ema[company, time_stamp] = \
-                data[company, time_stamp] * (smoothing / (time_stamp + 1)) +\
-                ema[company, time_stamp - 1] * (1 - (smoothing / (time_stamp + 1)))
+                data[company, time_stamp] * (smoothing / 1001) +\
+                ema[company, time_stamp - 1] * (1 - (smoothing / 1001))
 
     return ema
-
 
 
 # gets past data from the alpaca trade api and saves it to a file
@@ -81,6 +81,7 @@ def get_past_data_to_csv(api, allSymbols=get_symbols(), dataLimit=1000):
     np.savetxt("data/techDataR.csv", data_r, delimiter=',', fmt='%f')
     np.savetxt("data/techDataEMA.csv", data_ema, delimiter=',', fmt='%f')
 
+
 # gets past data from alpaca trade api but returns the data instead of saving to a file
 def get_past_data(api, all_symbols=get_symbols(), dataLimit=1000):
 
@@ -115,10 +116,11 @@ def get_past_data(api, all_symbols=get_symbols(), dataLimit=1000):
 
         data_o = arr1 if (i == 0) else np.row_stack((data_o, arr1))
         data_v = arr2 if (i == 0) else np.row_stack((data_v, arr2))
-        data_r = arr2 if (i == 0) else np.row_stack((data_r, arr3))
+        data_r = arr3 if (i == 0) else np.row_stack((data_r, arr3))
         data_ema = calculate_ema(data_o, 2)
 
         data = np.stack((data_o, data_v, data_r, data_ema))
+        data = data.swapaxes(0, 1)
 
     return data
 

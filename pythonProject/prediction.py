@@ -1,19 +1,48 @@
-import time
-
-from keras.models import model_from_json
 import numpy as np
-from sklearn.model_selection import train_test_split
-from scipy.signal import argrelextrema
 import matplotlib.pyplot as plt
 import copy
-from pythonProject.getData import past_data, current_data
+import random
+from pythonProject.getData import current_data
+from pythonProject import stock, main
+from keras.models import model_from_json
 
-from pythonProject import methods
+
+class Prediction:
+    stocks = []
+    money = 100000
+
+
+# Updates the data for predictions
+def update_data(data, listening):
+    x = current_data.get_new_data()
+
+    #for key in listening:
+    #    if (random.random() < .2):
+    #        x["AM." + key] = [random.random(), random.random(), random.random()]
+
+
+    assert listening.shape[0] == data.shape[0], "some listening to not have full 1000 data"
+
+    for key in x.keys():
+
+        for company in range(0, listening.shape[0]):
+            if key[3:] == listening[company]:
+                n = company
+                break
+
+        past_ema = data[n, -1, -1]
+        new_ema = x[key][0] * (2 / 1001) + \
+                past_ema * (1 - (2 / 1001))
+        new_data = np.append(np.array(x[key]), new_ema)
+
+        data[n] = np.roll(data[n], -1, axis=1)
+        data[n, :, -1] = new_data
+
+    return data
 
 
 # standerdizes data
 def standerdize_data(data):
-
     data2 = copy.deepcopy(data)
 
     for company in range(0, data.shape[0]):
@@ -25,30 +54,13 @@ def standerdize_data(data):
 
     return data2
 
-# Updates the data for predictions
-def update_data(data, listening):
-
-    x = current_data.Data.get_new_data()
-
-    for key in x.keys():
-        n = np.where(listening, key)
-
-        data[n]
-
-        data[n] = np.append(data[n], np.array(x[key]).reshape((3,1)), axis=1)
-        data[n] = data[n, :, -1000:]
-
-    return data
-
 # With the updated data create new predictions
-def get_prediction_data(p_data):
-    #a1 = data[:,:,:949]
-    #a2 = data[:,:,-949:]
+# needs normalized data as input
+def get_prediction_data(data):
 
     # reformating data from
-    # (channels, company, 1000) -> (company, 1, channels, 950)
-
-    data = np.expand_dims(np.swapaxes(p_data[:, :, -950:], 0, 1), axis=1)
+    # (company, channels, 1000) -> (company, 1, channels, 950)
+    data = np.expand_dims(data[:, :, -950:], axis=1)
 
     # code from:
     # https://machinelearningmastery.com/save-load-keras-deep-learning-models/
@@ -63,25 +75,35 @@ def get_prediction_data(p_data):
 
     return prediction
 
-def predict_graph(data1):
+# gets unnormalized prediction data
+# needs unscaled data as input
+def get_unnormalized_prediction_data(data):
 
-    #standerdizes data and finds average
+    s_data = standerdize_data(data)
+    prediction = get_prediction_data(s_data)
+
+    for company in range(0, data.shape[0]):
+        mean = data[company, 0].mean()
+        ranges = data[company, 0].max() - data[company, 0].min()
+        prediction[company] = (prediction[company] * ranges) + mean
+
+    return prediction
+
+
+
+# creates a graph with past and predicted data for each listening company
+def predict_graph(data1):
+    # standerdizes data and finds average
     data = standerdize_data(data1)
     average = np.expand_dims(np.average(data, axis=1), 1)
 
     # prediction is in array format
     prediction = get_prediction_data(data)
     avg_prediction = get_prediction_data(average)
-    #n = 0
-    #for key in data.keys():
-    #    data[key] = np.append(np.squeeze(data[key][0, :, -950:]), prediction[n])
-    #    n+=1
-
-    #prediction2 = get_prediction_data(np.append(np.squeeze(data[0, -900:]), prediction))
 
     fig = plt.figure()
     ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
-    ax.set(title= "Distribution After Scaling", xlabel='Minutes', ylabel='Stock Scaled Value')
+    ax.set(title="Distribution After Scaling", xlabel='Minutes', ylabel='Stock Scaled Value')
 
     for company_index, company in enumerate(prediction):
         ax.plot(range(15000, 15750, 15), company, '--')
@@ -90,46 +112,30 @@ def predict_graph(data1):
     ax.plot(range(15000, 15750, 15), avg_prediction, '.-')
     ax.plot(range(0, 15000, 15), average[0, 0], '.-')
 
-    #for n in prediction2:
-    #    ax.plot(range(15750, 16500, 15), n)
-
     plt.show()
 
-def predict(data1):
 
-    # data is in dict format
-    data = standerdize_data(data1)
-
-    # prediction is in array format
-    prediction = get_prediction_data(data)
-
-    # TODO work on this algorthim
-    for key in data.keys():
-
-        minIndex = 0
-        minValue = 100;
-        maxIndex = 0
-        maxValue = -100;
-        initialValue = data.get(key)[-1:]
-
-        for x in range(0, len(prediction[key])):
-            if prediction.get(key)[x] < minValue:
-                minValue = prediction.get(key)[x]
-                minIndex = x
-
-            if prediction.get(key)[x] > maxValue:
-                maxValue = prediction.get(key)[x]
-                maxIndex = x
-
-        print(key)
-        print(str(minValue) + " " + str(maxValue))
-        print(str(minIndex) + " " + str(maxIndex))
-        print(initialValue)
-
-        if minIndex < maxIndex and minValue >= initialValue:
-            print("buy")
-        else:
-            print("sell")
+# needs to be called before buy_and_sell
+# creates the stock classes
+def create_stocks(listening):
+    Prediction.stocks = [stock.Stock(name) for name in listening]
 
 
+# in charge of buying and selling data
+def buy_and_sell(data):
 
+    # gets the unormalized prediction data
+    prediction = get_unnormalized_prediction_data(data)
+
+    profit = 0
+
+    for company in range(0, data.shape[0]):
+        if Prediction.stocks[company].amount == 0 and Prediction.stocks[company].should_buy(data[company, 0, -1], prediction[company], 1.01) and not Prediction.stocks[company].should_sell(data[company, 0, -1], prediction[company], 1.1):
+            Prediction.stocks[company].buy(main.Main.api, data[company, 0, -1], 1)
+
+        elif Prediction.stocks[company].amount != 0 and Prediction.stocks[company].should_sell(data[company, 0, -1], prediction[company], 1.1):
+            Prediction.stocks[company].sell(main.Main.api, data[company, 0, -1])
+
+        profit += Prediction.stocks[company].profit
+
+    print(profit)

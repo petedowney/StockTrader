@@ -4,16 +4,39 @@ Created on Mon Feb 22 15:04:12 2021
 @author: Toby
 @author: Pete Downey
 """
+import threading
+
 import numpy as np
 import random
 import copy
 from keras import models
 from keras import layers
+from keras.models import model_from_json
+
 from pythonProject import methods
 
 
+class NeuralNet:
+    nn_semaphore = threading.Semaphore()
+    # code from:
+    # https://machinelearningmastery.com/save-load-keras-deep-learning-models/
+    json_file = open('data/model.json', 'r')
+    assert json_file is not None
+    "No NN model has been saved"
+    loaded_model_json = json_file.read()
+    json_file.close()
+    _model = model_from_json(loaded_model_json)
+    _model.load_weights("data/model.h5")
+
+
+# TODO make sure this actually works
+def get_model():
+    NeuralNet.nn_semaphore.acquire()
+    temp = copy.copy(NeuralNet._model)
+    NeuralNet.nn_semaphore.release()
+    return temp
+
 def split_data(data, y_count):
-    shape = data.shape
 
     X = np.array(data[:, :, :-y_count + 1])
     Y = np.array(data[:, :, -y_count + 1:])
@@ -49,29 +72,23 @@ def random_split_3rdD(x, y, splitpercent):
 
     n1 = 0
     n2 = 0
-    for n in range(0, x.shape[1]):
+    for n in range(0, x.shape[0]):
 
         if random.random() < splitpercent:
             if n1 == 0:
-                x1 = x[:, n, :]
-                y1 = y[:, n, :]
-            elif n1 == 1:
-                x1 = np.stack((x1, x[:, n, :]), axis=1)
-                y1 = np.stack((y1, y[:, n, :]), axis=1)
+                x1 = [x[n, :, :]]
+                y1 = [y[n, :, :]]
             else:
-                x1 = np.hstack((x1, np.reshape(x[:, n, :], (x.shape[0], 1, x.shape[2]))))
-                y1 = np.hstack((y1, np.reshape(y[:, n, :], (y.shape[0], 1, y.shape[2]))))
+                x1 = np.append(x1, [x[n, :, :]], axis=0)
+                y1 = np.append(y1, [y[n, :, :]], axis=0)
             n1 += 1
         else:
             if n2 == 0:
-                x2 = x[:, n, :]
-                y2 = y[:, n, :]
-            elif n2 == 1:
-                x2 = np.stack((x2, x[:, n, :]), axis=1)
-                y2 = np.stack((y2, y[:, n, :]), axis=1)
+                x2 = [x[n, :, :]]
+                y2 = [y[n, :, :]]
             else:
-                x2 = np.hstack((x2, np.reshape(x[:, n, :], (x.shape[0], 1, x.shape[2]))))
-                y2 = np.hstack((y2, np.reshape(y[:, n, :], (y.shape[0], 1, y.shape[2]))))
+                x2 = np.append(x2, [x[n, :, :]], axis=0)
+                y2 = np.append(y2, [y[n, :, :]], axis=0)
             n2 += 1
 
     return x1, x2, y1, y2
@@ -91,8 +108,8 @@ def full_standerdize(data, outputCount):
     # i am using lambdas solely because it makes toby happy
 
     # reformat the data to work with the NN
-    # swaps axis 1 and 0 then adds an axis onto axis 1 creating a 4d array
-    swap_and_expand = lambda data_input: np.expand_dims(np.swapaxes(data_input, 0, 1), axis=1)
+    # adds an axis onto axis 1 creating a 4d array
+    swap_and_expand = lambda data_input: np.expand_dims(data_input, axis=1)
 
     test_x = swap_and_expand(test_x)
     test_y = swap_and_expand(test_y)
@@ -113,32 +130,14 @@ def full_standerdize(data, outputCount):
 
 
 # ASKTOBY
-def train_neural_net():
-    # DATA ===========
-    file_name = 'data/techDataO.csv'
-    raw_data = open(file_name, 'rt')
-    data_o = np.loadtxt(raw_data, delimiter=',', dtype=np.float)
-
-    file_name = 'data/techDataV.csv'
-    raw_data = open(file_name, 'rt')
-    data_v = np.loadtxt(raw_data, delimiter=',', dtype=np.float)
-
-    file_name = 'data/techDataR.csv'
-    raw_data = open(file_name, 'rt')
-    data_r = np.loadtxt(raw_data, delimiter=',', dtype=np.float)
-
-    file_name = 'data/techDataEMA.csv'
-    raw_data = open(file_name, 'rt')
-    data_ema = np.loadtxt(raw_data, delimiter=',', dtype=np.float)
-
-    # stacks the data into a single 3d array
-    data = np.stack((data_o, data_v, data_r, data_ema))
+def train_neural_net(data):
 
     output_count = 50
 
     # splits up the data into the various types and seperates x and y and standerdizes
     test_x, test_y, train_x, train_y, val_x, val_y = full_standerdize(data, output_count)
 
+    print("training")
     # honestly this is one of those things where the deeper you get the less it makes sense
     # the last output has an output of (node, outcount) ?????????????
     # don't even get me started on the convLSTM1D layer
@@ -159,12 +158,12 @@ def train_neural_net():
     # output layer
     model.add(layers.Dense(1, activation='linear'))
 
-    model.summary()
+    #model.summary()
 
     model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
 
     # trains the model
-    history = model.fit(train_x, train_y, epochs=30, batch_size=64, validation_data=(val_x, val_y), verbose=1)
+    history = model.fit(train_x, train_y, epochs=30, batch_size=64, validation_data=(val_x, val_y), verbose=0)
 
     methods.plotLoss(history)
 
@@ -175,6 +174,10 @@ def train_neural_net():
         json_file.write(model_json)
     # serialize weights to HDF5
     model.save_weights("data/model.h5")
+
+    NeuralNet.nn_semaphore.acquire()
+    NeuralNet._model = model
+    NeuralNet.nn_semaphore.release()
 
 
 if __name__ == "__main__":

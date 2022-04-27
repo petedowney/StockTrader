@@ -1,3 +1,5 @@
+import traceback
+
 from pythonProject.getData import config
 from pythonProject import main
 
@@ -14,43 +16,54 @@ class Data:
 # and begin listening to the listenCompanies
 def on_open(ws):
     print("open")
-    auth_data = {
-        "action": "authenticate",
-        "data": {"key_id": config.API_KEY, "secret_key": config.SECRET_KEY}
-    }
+    auth_data = {"action":"auth","key":f"{config.API_KEY}",
+                 "secret":f"{config.SECRET_KEY}"}
 
     ws.send(json.dumps(auth_data))
 
-    listen_message = {"action": "listen",
-                      "data": {"streams": ["AM." + x for x in main.Main.listening]}}
-    ws.send(json.dumps(listen_message))
+    temp = {"action":"subscribe","bars":["AAPL"]}
+    ws.send(json.dumps(temp))
+
+    listen_message = {"action":"subscribe",
+                      "bars": main.Main.get_listening()}
+    #ws.send(json.dumps(listen_message))
 
 
 # On a message will update the outPutMessage with the new data
 # If it is an authentication message it will just print it out
 def on_message(ws, message):
-    message = json.loads(message)
+    #print("-------")
+    #print(message)
+    #print("-------")
+    try:
+        message = json.loads(message)
 
-    if "o" in message.get("data"):
+        for bar in message:
+            if "o" in bar:
 
-        main.Main.adding_data_semaphore.acquire()
+                main.Main.adding_data_semaphore.acquire()
 
-        if message["stream"] in Data.out_put_message.keys():
-            Data.out_put_message[message["stream"]] = np.append(Data.out_put_message[message["stream"]],
-                                                                [message.get("data").get("o"),
-                                                                 message.get("data").get("v"),
-                                                                 message.get("data").get("h") -
-                                                                 message.get("data").get("l")], axis=1)
-        else:
-            Data.out_put_message[message["stream"]] = \
-                [message.get("data").get("o"),
-                 message.get("data").get("v"),
-                 message.get("data").get("h") -
-                 message.get("data").get("l")]
+                if bar["S"] in Data.out_put_message.keys():
 
-        main.Main.adding_data_semaphore.release()
-    else:
-        print(message)
+                    Data.out_put_message[bar["S"]] = np.append(Data.out_put_message[bar["S"]],
+                                                                        [[bar.get("o"),
+                                                                         bar["v"],
+                                                                         bar["h"] -
+                                                                         bar["l"]]], axis=0)
+                else:
+                    Data.out_put_message[bar["S"]] = [[bar.get("o"),
+                                            bar["v"], bar["h"] - bar["l"]]]
+
+                main.Main.adding_data_semaphore.release()
+            else:
+                pass
+                #print(message)
+    except Exception as exc:
+        print(str(type(exc))[8:-2])
+        print(exc.args)
+        print(traceback.format_tb(exc.__traceback__))
+        exit(1)
+
 
 
 # just logs that the connection has been closed
@@ -60,7 +73,7 @@ def on_close(ws):
 
 # will listen to companies for new data based on the standerdListen
 def listen():
-    socket = "wss://data.alpaca.markets/stream"
+    socket = "wss://stream.data.alpaca.markets/v2/iex"
     ws = websocket.WebSocketApp(socket, on_open=on_open, on_message=on_message, on_close=on_close)
     ws.run_forever()
 

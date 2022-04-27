@@ -1,4 +1,6 @@
-
+from datetime import date
+from datetime import timedelta
+from datetime import datetime
 
 from keras.models import model_from_json
 import numpy
@@ -33,9 +35,19 @@ assert api is not None
 
 #api.submit_order("GME", 1)
 
-api.submit_order("GME", 1, side="sell")
-#print(data)
+today = datetime.utcnow() - timedelta(minutes=15)
+#today = today.se
+last_week = today - timedelta(days=2)
 
-x = 1
-#print(data)
-print("ad;f;adfsfvzdf;asdf;adf")
+today = today.isoformat("T") + "Z"
+last_week = last_week.isoformat("T") + "Z"
+
+
+start_date = datetime.utcnow().replace(hour=9, minute=30) - timedelta(days=1)#(datetime.utcnow() - timedelta(days=2)).isoformat("T") + "Z"
+end_date = datetime.utcnow().replace(hour=14, minute=00) - timedelta(days=1)
+
+calander = api.get_calendar((start_date+timedelta(days=1)).isoformat("T") + "Z", (end_date+timedelta(days=1)).isoformat("T") + "Z")
+
+#api.get_calendar((start_date-timedelta(10)).isoformat("T") + "Z", (start_date-timedelta(10)).isoformat("T") + "Z")[0]._raw["date"]
+
+minute_bars = api.get_bars("AAPL", "1Min", end=str(today), start=last_week, limit=2000).df

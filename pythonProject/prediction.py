@@ -1,42 +1,57 @@
+import logging
+import traceback
+
 import numpy as np
 import matplotlib.pyplot as plt
 import copy
 import random
 from pythonProject.getData import current_data
-from pythonProject import stock, main
+from pythonProject import stock, main, neural_net
 from keras.models import model_from_json
 
 
 class Prediction:
     stocks = []
     money = 100000
+    #logging.basicConfig(filename="stocks_to_remove.txt",
+                       #filemode='a',
+                       #format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+                       #datefmt='%H:%M:%S',
+                       #level=logging.DEBUG)
+
+    #logging.info("Buying and Selling Stocks")
+
 
 
 # Updates the data for predictions
 def update_data(data, listening):
+
+    #TODO make this work with multiple messages at once
+
     x = current_data.get_new_data()
 
     #for key in listening:
     #    if (random.random() < .2):
     #        x["AM." + key] = [random.random(), random.random(), random.random()]
 
-
-    assert listening.shape[0] == data.shape[0], "some listening to not have full 1000 data"
-
     for key in x.keys():
 
+        n = -1
         for company in range(0, listening.shape[0]):
-            if key[3:] == listening[company]:
+            if key == listening[company]:
                 n = company
                 break
 
-        past_ema = data[n, -1, -1]
-        new_ema = x[key][0] * (2 / 1001) + \
-                past_ema * (1 - (2 / 1001))
-        new_data = np.append(np.array(x[key]), new_ema)
+        assert n != -1, f"Index not found in listening {key} \n{listening}"
 
-        data[n] = np.roll(data[n], -1, axis=1)
-        data[n, :, -1] = new_data
+        for time_stamp in x[key]:
+            past_ema = data[n, -1, -1]
+            new_ema = time_stamp[0] * (2 / 1001) + \
+                    past_ema * (1 - (2 / 1001))
+            new_data = np.append(time_stamp, [new_ema])
+
+            data[n] = np.roll(data[n], -1, axis=1)
+            data[n, :, -1] = new_data
 
     return data
 
@@ -62,13 +77,7 @@ def get_prediction_data(data):
     # (company, channels, 1000) -> (company, 1, channels, 950)
     data = np.expand_dims(data[:, :, -950:], axis=1)
 
-    # code from:
-    # https://machinelearningmastery.com/save-load-keras-deep-learning-models/
-    json_file = open('data/model.json', 'r')
-    loaded_model_json = json_file.read()
-    json_file.close()
-    model = model_from_json(loaded_model_json)
-    model.load_weights("data/model.h5")
+    model = neural_net.get_model()
 
     # returns prediction and converts to a 2d array of (company, time index)
     prediction = np.squeeze(model.predict(data))
@@ -95,11 +104,11 @@ def get_unnormalized_prediction_data(data):
 def predict_graph(data1):
     # standerdizes data and finds average
     data = standerdize_data(data1)
-    average = np.expand_dims(np.average(data, axis=1), 1)
+    #average = np.expand_dims(np.average(data, axis=1), 1)
 
     # prediction is in array format
     prediction = get_prediction_data(data)
-    avg_prediction = get_prediction_data(average)
+    #avg_prediction = get_prediction_data(average)
 
     fig = plt.figure()
     ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
@@ -107,10 +116,10 @@ def predict_graph(data1):
 
     for company_index, company in enumerate(prediction):
         ax.plot(range(15000, 15750, 15), company, '--')
-        ax.plot(range(0, 15000, 15), data[0, company_index])
+        ax.plot(range(0, 15000, 15), data[company_index, 0])
 
-    ax.plot(range(15000, 15750, 15), avg_prediction, '.-')
-    ax.plot(range(0, 15000, 15), average[0, 0], '.-')
+    #ax.plot(range(15000, 15750, 15), avg_prediction, '.-')
+    #ax.plot(range(0, 15000, 15), average[0, 0], '.-')
 
     plt.show()
 
@@ -118,22 +127,38 @@ def predict_graph(data1):
 # needs to be called before buy_and_sell
 # creates the stock classes
 def create_stocks(listening):
+
     Prediction.stocks = [stock.Stock(name) for name in listening]
 
 
 # in charge of buying and selling data
 def buy_and_sell(data):
 
+    print("prediction")
     # gets the unormalized prediction data
     prediction = get_unnormalized_prediction_data(data)
 
     profit = 0
 
     for company in range(0, data.shape[0]):
-        if Prediction.stocks[company].amount == 0 and Prediction.stocks[company].should_buy(data[company, 0, -1], prediction[company], 1.01) and not Prediction.stocks[company].should_sell(data[company, 0, -1], prediction[company], 1.1):
-            Prediction.stocks[company].buy(main.Main.api, data[company, 0, -1], 1)
+        if Prediction.stocks[company].amount == 0 and Prediction.stocks[company].should_buy(data[company, 0, -1], prediction[company], 1.01):
+            try:
+                Prediction.stocks[company].buy(main.Main.api, data[company, 0, -1], 1)
 
-        elif Prediction.stocks[company].amount != 0 and Prediction.stocks[company].should_sell(data[company, 0, -1], prediction[company], 1.1):
+            except Exception as exc:
+                print("asdfaslkdjfklasjflkasdjfalksdjfakljsdf")
+                try:
+                    logging.debug(f"Remove: {main.Main._listening[company]}")
+                except:
+                    print("bruh")
+                print(str(type(exc))[8:-2])
+                print(exc.args)
+                print(traceback.format_tb(exc.__traceback__))
+                exit(1)
+                #Prediction.stocks.remove(Prediction.stocks[company])
+                #company -= 1
+
+        elif Prediction.stocks[company].amount != 0 and Prediction.stocks[company].should_sell(data[company, 0, -1], prediction[company], 10):
             Prediction.stocks[company].sell(main.Main.api, data[company, 0, -1])
 
         profit += Prediction.stocks[company].profit

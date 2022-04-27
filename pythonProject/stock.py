@@ -12,9 +12,9 @@ class Stock:
         self.name = name
 
     def buy(self, api, bought_price, amount):
+        api.submit_order(self.name, amount)
         self.bought_price = bought_price
         self.amount = amount
-        api.submit_order(self.name, amount)
 
     def sell(self, api, curr_price):
         self.profit += (curr_price - self.bought_price) * self.amount
@@ -28,4 +28,12 @@ class Stock:
         return max(prediction) / curr_price > buy_threshold and self.expected_slope(prediction)
 
     def expected_slope(self, prediction):
-        return np.argmax(prediction) < np.argmin(prediction) and prediction[0] < max(prediction)
+        # TODO fix this
+        # return np.argmax(prediction) < np.argmin(prediction) and prediction[0] < max(prediction)
+        return prediction[0] < max(prediction)
+
+
+
+
+
+

@@ -1,9 +1,6 @@
 import math
-import sys
-
 import numpy as np
 import pandas as pd
-from datetime import date
 from datetime import timedelta
 from datetime import datetime
 
@@ -13,6 +10,7 @@ def vectorize(bars, dataType):
     for i, bar in enumerate(bars):
         arr[i] = bar.get(dataType);
     return arr
+
 
 # gets the different tech companies from the tech.csv
 def get_symbols():
@@ -86,9 +84,9 @@ def get_past_data_to_csv(api, allSymbols=get_symbols(), dataLimit=1000):
     np.savetxt("data/techDataR.csv", data_r, delimiter=',', fmt='%f')
     np.savetxt("data/techDataEMA.csv", data_ema, delimiter=',', fmt='%f')
 
+
 # interpolates the data by date for each minute
 def interpolate(data):
-
     dates = pd.to_datetime(data[:, 0])
     timestamp = 0
     while timestamp < len(dates) - 1:
@@ -108,11 +106,11 @@ def interpolate(data):
 # gets past data from alpaca trade api but returns the data instead of saving to a file
 def get_past_data(api, all_symbols=get_symbols()):
 
-    print("?")
     # I hate all of this code with a burning passion
     # the way the old API worked was so much better
 
     # TODO clean up code
+    # TODO fix bug that breaks program if launched between 9:15 and 9:30
     # TODO should I make a class for barset
 
     count = math.ceil(len(all_symbols) / 25)
@@ -134,12 +132,12 @@ def get_past_data(api, all_symbols=get_symbols()):
         for day in range(7):
 
             # finds the next day that the market is open
-            # starts from today (or yesterday) and goes backwords from their
+            # starts from today (or yesterday) and goes backwards from there
             new_date = str(curr_date.date()) == \
-                           api.get_calendar((curr_date).isoformat("T") + "Z",
-                                            (curr_date).isoformat("T") + "Z")[0]._raw["date"]
+                       api.get_calendar((curr_date).isoformat("T") + "Z",
+                                        (curr_date).isoformat("T") + "Z")[0]._raw["date"]
 
-            while not new_date:
+            while not new_date and datetime.utcnow() > curr_date.replace(hour=13, minute=46):
                 curr_date = curr_date - timedelta(days=1)
                 new_date = str(curr_date.date()) == \
                            api.get_calendar((curr_date).isoformat("T") + "Z",
@@ -151,10 +149,12 @@ def get_past_data(api, all_symbols=get_symbols()):
             # makes sure that the list of companies given by symbols is not empty
             if len(symbols) > 0:
 
-                if datetime.utcnow().timestamp() < end_date.timestamp() and str(start_date.date()) == str(datetime.utcnow().date()):
+                if datetime.utcnow().timestamp() < end_date.timestamp() and \
+                        str(start_date.date()) == str(datetime.utcnow().date()):
                     # gets the bar of today
                     barset = api.get_bars(symbols, "1Min", start=start_date.isoformat("T") + "Z",
-                                          end=(datetime.utcnow() - timedelta(minutes=15, seconds=1)).isoformat("T") + "Z",
+                                          end=(datetime.utcnow() - timedelta(minutes=15, seconds=1)).isoformat(
+                                              "T") + "Z",
                                           limit=10000)
                 else:
                     # gets the barset if it is not today or the market has already closed for today
@@ -172,7 +172,7 @@ def get_past_data(api, all_symbols=get_symbols()):
                                        barset[n]._raw["v"],
                                        barset[n]._raw["h"] -
                                        barset[n]._raw["l"]]])
-                        #barset_dictionary[company_name][0] = str(barset[n]._raw["t"])
+
                     else:
                         new_bar_array = [[barset[n]._raw["t"],
                                           barset[n]._raw["o"],
@@ -180,16 +180,14 @@ def get_past_data(api, all_symbols=get_symbols()):
                                           barset[n]._raw["h"] -
                                           barset[n]._raw["l"]]]
                         barset_dictionary[company_name] = np.append(new_bar_array,
-                                                            barset_dictionary[company_name], axis=0)
+                                                                    barset_dictionary[company_name], axis=0)
             curr_date = curr_date - timedelta(days=1)
 
-    print("?2")
     for company in barset_dictionary.keys():
         barset_dictionary[company] = np.sort(barset_dictionary[company], axis=0)
         # TODO fix interpolation
-        #barset_dictionary[company] = interpolate(barset_dictionary[company])
+        # barset_dictionary[company] = interpolate(barset_dictionary[company])
 
-    print("converting")
     # convets dictionary to an array
     # TODO make sure that array does not contain timestamps
     data = [[[]]]
@@ -204,12 +202,9 @@ def get_past_data(api, all_symbols=get_symbols()):
         else:
             non_1000 = np.append(non_1000, company)
 
+    # reformats data
     data = np.swapaxes(data, 1, 2).astype(float)
-
-    # (company, channels, timestamps)
-
     data_ema = calculate_ema(np.squeeze(data[:, 0]), 2)
-
     data = np.append(data, np.expand_dims(data_ema, 1), axis=1)
-    print("converting done")
+
     return data, non_1000

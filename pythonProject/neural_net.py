@@ -12,8 +12,7 @@ import copy
 from keras import models
 from keras import layers
 from keras.models import model_from_json
-
-from pythonProject import methods
+from matplotlib import pyplot as plt
 
 
 class NeuralNet:
@@ -29,6 +28,15 @@ class NeuralNet:
     _model.load_weights("data/model.h5")
 
 
+# plots the loss of a stock
+def plot_loss(history):
+    fig = plt.figure()
+    ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
+    ax.set(title='Loss vs. Time', xlabel='epoch', ylabel='loss')
+    ax.plot(history.history['loss'])
+    ax.plot(history.history['val_loss'], color='red')
+
+
 # TODO make sure this actually works
 def get_model():
     NeuralNet.nn_semaphore.acquire()
@@ -36,8 +44,8 @@ def get_model():
     NeuralNet.nn_semaphore.release()
     return temp
 
-def split_data(data, y_count):
 
+def split_data(data, y_count):
     X = np.array(data[:, :, :-y_count + 1])
     Y = np.array(data[:, :, -y_count + 1:])
 
@@ -94,9 +102,9 @@ def random_split_3rdD(x, y, splitpercent):
     return x1, x2, y1, y2
 
 
-def full_standerdize(data, outputCount):
+def full_standerdize(data, output_count):
     # splits data into x and y
-    x, y = split_data(data, outputCount + 1)
+    x, y = split_data(data, output_count + 1)
 
     # standardization
     x, y = standerdize(x, y)
@@ -131,13 +139,11 @@ def full_standerdize(data, outputCount):
 
 # ASKTOBY
 def train_neural_net(data):
-
     output_count = 50
 
     # splits up the data into the various types and seperates x and y and standerdizes
     test_x, test_y, train_x, train_y, val_x, val_y = full_standerdize(data, output_count)
 
-    print("training")
     # honestly this is one of those things where the deeper you get the less it makes sense
     # the last output has an output of (node, outcount) ?????????????
     # don't even get me started on the convLSTM1D layer
@@ -158,14 +164,14 @@ def train_neural_net(data):
     # output layer
     model.add(layers.Dense(1, activation='linear'))
 
-    #model.summary()
+    # model.summary()
 
     model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
 
     # trains the model
     history = model.fit(train_x, train_y, epochs=30, batch_size=64, validation_data=(val_x, val_y), verbose=0)
 
-    methods.plotLoss(history)
+    plot_loss(history)
 
     # saves data
     # code from: https://machinelearningmastery.com/save-load-keras-deep-learning-models/
@@ -174,7 +180,8 @@ def train_neural_net(data):
         json_file.write(model_json)
     # serialize weights to HDF5
     model.save_weights("data/model.h5")
-
+    
+    # updates the used model
     NeuralNet.nn_semaphore.acquire()
     NeuralNet._model = model
     NeuralNet.nn_semaphore.release()

@@ -19,10 +19,13 @@ This program will automatically paper trade stocks in the tech sector. It uses A
 
 6. in the config.py file create two strings. One called **API_KEY** and the other called **SECRET_KEY**. Set these equal to the keys given by the Alpaca Acount
 
+> <img width="461" alt="Screen Shot 2022-05-18 at 8 25 53 PM" src="https://user-images.githubusercontent.com/55404565/169177018-a9bc20ed-8e2c-4070-a328-f2e434d1c3ba.png">
+
 7. Setup should be complete
 
 ## Use
 In order for the best results the program should be launched at 9:16 on days that the market is open.
+It will take around 15 minutes from run time for the program to be fully operational
 
 
 
